@@ -1,4 +1,3 @@
-{{-- 
 {{-- resources/views/admin/review-posts.blade.php --}}
 @extends('layouts.app')
 

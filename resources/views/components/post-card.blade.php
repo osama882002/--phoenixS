@@ -1,3 +1,4 @@
+{{--  (resources/views/components/post-card.blade.php) --}}
 <div class="bg-white p-4 rounded-xl shadow mb-6" id="post-{{ $post->id }}">
     <h2 class="text-xl font-bold text-indigo-700">{{ $post->title }}</h2>
 
