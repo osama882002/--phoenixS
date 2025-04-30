@@ -28,6 +28,8 @@ class NewPostSubmitted extends Notification
             'title' => $this->post->title,
             'author' => $this->post->user->name,
             'post_id' => $this->post->id,
+            'status' => 'pending', // لإظهار زر القبول والرفض
+            'message' => 'مقال جديد بانتظار المراجعة: ' . $this->post->title,
         ];
     }
 }

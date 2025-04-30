@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\AdminDashboardController;
+use App\Http\Controllers\Admin\AdminNotificationController;
 use App\Http\Controllers\Admin\PostReviewController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\User\UserNotificationsController;
@@ -18,13 +19,14 @@ Route::get('/', function (Request $request) {
         ->with('category')
         ->when($sort === 'popular', fn($q) => $q->withCount('likes')->orderByDesc('likes_count'))
         ->when($sort === 'latest', fn($q) => $q->latest())
+        ->take(3) // 👈 هذا السطر يحدد فقط 3 مقالات
         ->get();
 
     return view('site.home', compact('posts', 'sort'));
 })->name('home');
+
 Route::view('/about', 'site.about')->name('about');
 Route::view('/terms', 'site.terms')->name('terms');
-
 Route::get('/search', [PostController::class, 'search'])->name('posts.search');
 
 // صفحات الأقسام
@@ -35,7 +37,7 @@ Route::get('/{categorySlug}', [PostController::class, 'indexByCategory'])
 // التفاعل مع المقالات
 Route::post('/posts/{post}/like', [PostController::class, 'like'])->middleware('auth')->name('posts.like');
 Route::post('/posts/{post}/comment', [PostController::class, 'comment'])->middleware('auth')->name('posts.comment');
-Route::post('/comments/{comment}/reply', [CommentController::class, 'reply'])->name('comments.reply')->middleware('auth');
+// Route::post('/comments/{comment}/reply', [CommentController::class, 'reply'])->name('comments.reply')->middleware('auth');
 Route::delete('/comments/{comment}', [CommentController::class, 'destroy'])->name('comments.destroy')->middleware('auth');
 
 // إدارة المقالات من قبل المستخدمين
@@ -49,21 +51,38 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/posts/{post}', [PostController::class, 'destroy'])->name('posts.destroy');
 });
 
-// لوحة تحكم المشرف (dashboard + مراجعة المقالات)
-Route::middleware('auth')->prefix('admin')->group(function () {
-    Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
+// لوحة تحكم المشرف + إشعارات
+Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
 
-    Route::get('/review-posts', [PostReviewController::class, 'index'])->name('admin.posts.review');
-    Route::post('/review-posts/{post}/approve', [PostReviewController::class, 'approve'])->name('admin.posts.approve');
-    Route::delete('/review-posts/{post}/reject', [PostReviewController::class, 'reject'])->name('admin.posts.reject');
+    // مراجعة المقالات
+    Route::get('/review-posts', [PostReviewController::class, 'index'])->name('posts.review');
+    Route::post('/review-posts/{post}/approve', [PostReviewController::class, 'approve'])->name('posts.approve');
+    Route::delete('/review-posts/{post}/reject', [PostReviewController::class, 'reject'])->name('posts.reject');
+
+    // تفاصيل المستخدمين
+    Route::get('/users', [AdminDashboardController::class, 'users'])->name('users.index');
+    Route::delete('/users/{user}', [AdminDashboardController::class, 'destroyUser'])->name('users.destroy');
+    Route::post('/users/{user}/role', [AdminDashboardController::class, 'updateUserRole'])->name('users.updateRole');
+
+    // تفاصيل المقالات
+    Route::get('/posts', [AdminDashboardController::class, 'posts'])->name('posts.index');
+    Route::delete('/posts/{post}', [AdminDashboardController::class, 'destroyPost'])->name('posts.destroy');
+
+    // إشعارات المشرف
+    Route::get('/notifications', [AdminNotificationController::class, 'index'])->name('notifications');
+    Route::post('/notifications/read', [AdminNotificationController::class, 'markAllAsRead'])->name('notifications.readAll');
+    Route::delete('/notifications/clear-read', [AdminNotificationController::class, 'clearRead'])->name('notifications.clearRead');
+    Route::delete('/notifications/{id}', [AdminNotificationController::class, 'destroy'])->name('notifications.destroy');
+    Route::post('/notifications/{post}/approve', [AdminNotificationController::class, 'approve'])->name('notifications.approve');
+    Route::delete('/notifications/{post}/reject', [AdminNotificationController::class, 'reject'])->name('notifications.reject');
 });
-// تحويل Route Breeze الافتراضي إلى لوحة التحكم
+
+// توجيه لوحة التحكم
 Route::get('/dashboard', function () {
-    if (auth::user()->hasRole('admin')) {
-        return redirect()->route('admin.dashboard');
-    } else {
-        return redirect()->route('posts.my'); // صفحة مقالاتي للمستخدم العادي
-    }
+    return auth::user()->hasRole('admin')
+        ? redirect()->route('admin.dashboard')
+        : redirect()->route('home');
 })->middleware('auth')->name('dashboard');
 
 // إشعارات المستخدم
@@ -73,5 +92,5 @@ Route::middleware('auth')->prefix('notifications')->group(function () {
     Route::delete('/{id}', [UserNotificationsController::class, 'destroy'])->name('user.notifications.destroy');
 });
 
-// Laravel Breeze (التسجيل وتسجيل الدخول)
+// Laravel Breeze
 require __DIR__.'/auth.php';

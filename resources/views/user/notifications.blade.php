@@ -19,10 +19,19 @@
                 <p class="text-gray-800">{{ $notification->data['message'] ?? 'رسالة إشعار' }}</p>
                 <p class="text-sm text-gray-500 mt-1">{{ $notification->created_at->diffForHumans() }}</p>
 
-                @if (isset($notification->data['post_id']))
-                    <a href="{{ route('posts.show', $notification->data['post_id']) }}"
+
+                @php
+                    $post = \App\Models\Post::find($notification->data['post_id']);
+                @endphp
+
+                @if ($post && $post->status === 'approved')
+                    <a href="{{ route('posts.show', $post->id) }}"
                         class="inline-block mt-2 text-indigo-600 text-sm hover:underline">عرض المقال ➡️</a>
+                @else
+                    <span class="text-sm text-gray-500 mt-2 inline-block">المقال غير متاح</span>
                 @endif
+
+                
 
                 <button onclick="deleteNotification('{{ $notification->id }}')"
                     class="ml-4 text-sm text-red-600 hover:underline">🗑️ حذف</button>

@@ -58,33 +58,35 @@ class PostController extends Controller
             'media' => 'nullable|file|mimes:jpeg,png,jpg,mp4',
             'category_id' => 'required|exists:categories,id',
         ]);
-
+    
         $mediaPath = $request->hasFile('media')
             ? $request->file('media')->store('uploads', 'public')
             : null;
-
+    
+        $status = auth::user()->hasRole('admin') ? 'approved' : 'pending';
+    
         $post = Post::create([
             'user_id'     => Auth::id(),
             'title'       => substr($request->idea, 0, 60),
             'body'        => $request->idea,
             'media_path'  => $mediaPath,
             'category_id' => $request->category_id,
-            'status'      => 'pending',
+            'status'      => $status,
         ]);
-
-        // إرسال إشعار إلى جميع الأدمن
-        $admins = User::whereHas('roles', fn($q) => $q->where('name', 'admin'))->get();
-        foreach ($admins as $admin) {
-            $admin->notify(new NewPostSubmitted($post));
+    
+        // إشعار المشرفين فقط إذا لم يكن أدمن
+        if (!auth::user()->hasRole('admin')) {
+            $admins = User::role('admin')->get();
+            foreach ($admins as $admin) {
+                $admin->notify(new \App\Notifications\NewPostSubmitted($post));
+            }
         }
-
-        // ✅ التوجيه حسب الدور
-        if (Auth::user()->hasRole('admin')) {
-            return redirect()->route('home')->with('success', 'تم اضافة المقال.');
-        } else {
-            return redirect()->route('posts.my')->with('success', 'تم إرسال المقال للمراجعة.');
-        }
+    
+        return redirect()->route(
+            auth::user()->hasRole('admin') ? 'admin.posts.index' : 'posts.my'
+        )->with('success', auth::user()->hasRole('admin') ? 'تم نشر المقال مباشرة.' : 'تم إرسال المقال للمراجعة.');
     }
+    
 
     public function show(Post $post)
 {
@@ -161,7 +163,7 @@ class PostController extends Controller
     {
         $request->validate(['body' => 'required|string']);
 
-        $post->comments()->create([
+        $comment = $post->comments()->create([
             'user_id' => Auth::id(),
             'body' => $request->body,
         ]);
@@ -172,6 +174,8 @@ class PostController extends Controller
         return response()->json([
             'body' => $request->body,
             'user_name' => auth::user()->name,
+            'comment_id' => $comment->id,
+            'can_delete' => auth::user()->can('delete', $comment), // ⬅️ هذه الإضافة
         ]);
     }
     public function edit(Post $post)

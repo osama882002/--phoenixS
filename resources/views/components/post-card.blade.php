@@ -1,12 +1,15 @@
-{{--  (resources/views/components/post-card.blade.php) --}}
+{{-- (resources/views/components/post-card.blade.php) --}}
 <div class="bg-white p-4 rounded-xl shadow mb-6" id="post-{{ $post->id }}">
+    
+    {{-- تفاصيل المقال --}}
+    <div class="col-span-4 flex flex-col justify-between space-y-3">
     <h2 class="text-xl font-bold text-indigo-700">{{ $post->title }}</h2>
 
     <p class="text-sm text-gray-600 mt-1">
         بواسطة: {{ $post->user->name }} | القسم: {{ $post->category->name }} | {{ $post->created_at->diffForHumans() }}
     </p>
 
-    <p class="mt-3 text-gray-800">{{ Str::limit($post->body, 200) }}</p>
+    {{-- <p class="mt-3 text-gray-800">{{ Str::limit($post->body, 200) }}</p> --}}
     @if (!empty($showStatus) && isset($post->status))
         <p class="text-sm mt-2 font-medium">
             الحالة:
@@ -28,19 +31,27 @@
             @endswitch
         </p>
     @endif
-
-    @if ($post->media_path)
-        <div class="mt-4">
-            @if (Str::endsWith($post->media_path, ['.mp4']))
-                <video controls class="w-full rounded-lg shadow">
-                    <source src="{{ asset('storage/' . $post->media_path) }}" type="video/mp4">
-                </video>
+    </div>
+    {{-- صورة الوسائط --}}
+    <div class="col-span-1 flex justify-center">
+            @if ($post->media_path)
+                <div class="mt-4 flex justify-center">
+                    @if (Str::endsWith($post->media_path, ['.mp4']))
+                        <video controls class="rounded-lg shadow w-[200px] h-[200px] object-cover">
+                            <source src="{{ asset('storage/' . $post->media_path) }}" type="video/mp4">
+                        </video>
+                    @else
+                    <img src="{{ asset('storage/' . $post->media_path) }}" alt="media"
+                    class="rounded-lg shadow w-[200px] h-[200px] object-cover" />
+                    @endif
+                </div>
+            
             @else
-                <img src="{{ asset('storage/' . $post->media_path) }}"
-                    class="w-full max-h-64 object-contain rounded-lg shadow" alt="media">
+                    <div class="w-[200px] h-[200px] bg-gray-100 rounded shadow flex items-center justify-center text-gray-400 text-sm">
+                        لا توجد صورة
+                    </div>
             @endif
-        </div>
-    @endif
+    </div>
     @if ($post->status === 'approved')
         <div class="mt-4 flex gap-6 items-center text-sm text-gray-600">
             <div class="flex items-center gap-1 cursor-pointer hover:text-red-500"
@@ -70,36 +81,24 @@
             </form>
         @endauth
     @endif
-    <div class="mt-6 bg-gray-50 p-4 rounded shadow-sm hidden" id="comments-{{ $post->id }}">
-        <h3 class="text-sm font-semibold text-gray-700 mb-2">💬 التعليقات:</h3>
+    
+        <div class="mt-6 bg-gray-50 p-4 rounded shadow-sm hidden" id="comments-{{ $post->id }}">
+            <h3 class="text-sm font-semibold text-gray-700 mb-2">💬 التعليقات:</h3>
 
-        <div id="comments-container-{{ $post->id }}" class="space-y-4">
-            @foreach ($post->topLevelComments as $index => $comment)
-                <div class="comment-item-{{ $post->id }} {{ $index > 2 ? 'hidden' : '' }}">
-                    <div class="mb-4 border-b pb-3 border-gray-200">
-                        <p class="text-sm text-gray-800">{{ $comment->body }}</p>
-                        <span class="text-xs text-gray-500">بواسطة {{ $comment->user->name }} -
-                            {{ $comment->created_at->diffForHumans() }}</span>
-
-                        @if ($comment->replies->count())
-                            <button onclick="toggleReplies({{ $comment->id }})"
-                                class="text-xs text-indigo-600 hover:underline mt-2">
-                                عرض الردود ({{ $comment->replies->count() }})
-                            </button>
-                            <div id="replies-{{ $comment->id }}"
-                                class="hidden mt-3 ml-6 pl-4 border-l-2 border-blue-300">
-                                @foreach ($comment->replies as $reply)
-                                    <div class="bg-blue-50 p-2 rounded shadow-inner mb-2">
-                                        <p class="text-sm text-blue-800">🔁 {{ $reply->body }}</p>
-                                        <span class="text-xs text-gray-500">بواسطة {{ $reply->user->name }} -
-                                            {{ $reply->created_at->diffForHumans() }}</span>
-                                    </div>
-                                @endforeach
-                            </div>
-                        @endif
-                    </div>
-                </div>
-            @endforeach
+            <div id="comments-container-{{ $post->id }}" class="space-y-4">
+                @foreach ($post->topLevelComments as $index => $comment)
+        <div class="comment-item-{{ $post->id }} {{ $index > 2 ? 'hidden' : '' }}">
+            <div class="mb-4 border-b pb-3 border-gray-200" data-comment-id="{{ $comment->id }}">
+                <p class="text-sm text-gray-800">{{ $comment->body }}</p>
+                <span class="text-xs text-gray-500">بواسطة {{ $comment->user->name }} -
+                    {{ $comment->created_at->diffForHumans() }}</span>
+                @can('delete', $comment)
+                    <button onclick="deleteComment('{{ $comment->id }}', '{{ $post->id }}')" 
+                        class="text-xs text-red-600 hover:underline ml-2">🗑️ حذف</button>
+                @endcan
+            </div>
+        </div>
+                @endforeach
         </div>
 
         @if ($post->topLevelComments->count() > 3)
@@ -115,7 +114,6 @@
                 </button>
             </div>
         @endif
-
     </div>
 
     @if (!empty($showActions))
@@ -136,15 +134,6 @@
             el.classList.toggle('hidden');
         }
     }
-
-    function toggleReplies(commentId) {
-        const repliesDiv = document.getElementById('replies-' + commentId);
-        if (repliesDiv) {
-            repliesDiv.classList.toggle('hidden');
-        }
-    }
-
-    // عرض المزيد من التعليقات تدريجيًا
 
     function toggleCommentsExpand(postId) {
         const items = document.querySelectorAll('.comment-item-' + postId);
@@ -201,13 +190,9 @@
 
     async function submitComment(event, postId) {
         event.preventDefault();
+
         const body = document.getElementById('comment-body-' + postId).value;
         const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-
-        if (!body.trim()) {
-            alert('يرجى كتابة تعليق!');
-            return;
-        }
 
         try {
             const response = await fetch(`/posts/${postId}/comment`, {
@@ -217,9 +202,7 @@
                     'X-CSRF-TOKEN': token,
                     'Accept': 'application/json'
                 },
-                body: JSON.stringify({
-                    body
-                })
+                body: JSON.stringify({ body })
             });
 
             const result = await response.json();
@@ -227,17 +210,60 @@
             const commentsContainer = document.getElementById('comments-container-' + postId);
             const newComment = document.createElement('div');
             newComment.className = `mb-4 border-b pb-3 border-gray-200 comment-item-${postId}`;
+            newComment.setAttribute('data-id', result.comment_id);
             newComment.innerHTML = `
                 <p class="text-sm text-gray-800">${result.body}</p>
                 <span class="text-xs text-gray-500">بواسطة ${result.user_name} - قبل لحظات</span>
+                ${result.can_delete ? `<button onclick="deleteComment('${result.comment_id}')" class="text-xs text-red-600 hover:underline ml-2">🗑️ حذف</button>` : ''}
             `;
+
             commentsContainer.prepend(newComment);
 
-            document.getElementById('comment-body-' + postId).value = '';
+            // تحديث العداد
+            const countSpan = document.querySelector(`#post-${postId} a[href="javascript:void(0);"]`);
+            if (countSpan) {
+                const match = countSpan.textContent.match(/\d+/);
+                let count = match ? parseInt(match[0]) : 0;
+                count++;
+                countSpan.innerHTML = `💬 التعليقات (${count})`;
+            }
 
+            document.getElementById('comment-body-' + postId).value = '';
         } catch (error) {
             console.error(error);
-            alert('حدث خطأ أثناء إرسال التعليق.');
         }
+    }
+
+    function deleteComment(commentId, postId) {
+        // if (!confirm('هل أنت متأكد من حذف هذا التعليق؟')) return;
+
+        fetch('/comments/' + commentId, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Accept': 'application/json'
+            }
+        })
+        .then(response => {
+            if (!response.ok) throw new Error();
+            
+            // 1. حذف التعليق من الواجهة
+            const commentElement = document.querySelector(`[data-id="${commentId}"]`);
+            if (commentElement) {
+                commentElement.closest('.comment-item-' + postId).remove();
+            }
+            
+            // 2. تحديث عداد التعليقات
+            const commentsCountElement = document.querySelector(`#post-${postId} a[onclick="toggleComments(${postId})"]`);
+            if (commentsCountElement) {
+                const currentCount = parseInt(commentsCountElement.textContent.match(/\d+/)[0]);
+                commentsCountElement.textContent = `💬 التعليقات (${currentCount - 1})`;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            window.location.reload();
+            // alert('حدث خطأ أثناء حذف التعليق');
+        });
     }
 </script>

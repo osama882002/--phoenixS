@@ -59,21 +59,24 @@
             @if (auth()->user()->hasRole('admin'))
                 <a href="{{ route('admin.dashboard') }}" class="text-sm font-semibold text-indigo-700 hover:underline">لوحة
                     التحكم</a>
-                <a href="{{ route('admin.posts.review') }}" class="text-sm text-blue-700 font-semibold hover:underline">
-                    🛎️ إشعارات 
-                    @php  $unreadCount = auth()->check() ? auth()->user()->unreadNotifications()->count() : 0; @endphp
-                    @if($unreadCount > 0)
-                    <span class="absolute -top-2 -right-2 bg-red-600 text-white text-xs px-2 py-0.5 rounded-full">
-                        {{ $unreadCount }}
-                    </span>
-                @endif
+
+                <a href="{{ route('admin.notifications') }}" class="relative group hover:text-indigo-600">
+                    🛎️ إشعارات
+                    @php
+                        $unreadCount = auth()->check() ? auth()->user()->unreadNotifications->count() : 0;
+                    @endphp
+                    @if ($unreadCount > 0)
+                        <span class="absolute -top-2 -right-2 bg-red-600 text-white text-xs px-2 py-0.5 rounded-full">
+                            {{ $unreadCount }}
+                        </span>
+                    @endif
                 </a>
             @endif
             @if (auth()->user()->hasRole('user'))
                 <a href="{{ route('user.notifications') }}" class="relative text-sm text-gray-700 hover:underline mr-4">
                     🔔 إشعاراتي
                     @php $unread = auth()->user()->unreadNotifications->count(); @endphp
-                    @if($unread > 0)
+                    @if ($unread > 0)
                         <span class="absolute -top-2 -right-2 bg-red-600 text-white text-xs px-2 py-0.5 rounded-full">
                             {{ $unread }}
                         </span>
@@ -160,9 +163,9 @@
         @yield('content')
     </main>
 
-    <footer class="bg-white text-center text-sm text-gray-500 p-4 mt-12 shadow-inner">
-        &copy; 2025 Phoenix Soul - جميع الحقوق محفوظة
-        <div class="mt-2 space-x-4 rtl:space-x-reverse text-indigo-700">
+    <footer  class="bg-white shadow p-4 flex justify-between items-center">
+        <p class="text-sm text-gray-500">© 2025 Phoenix Soul. جميع الحقوق محفوظة.</p> 
+            <div class="mt-2 space-x-4 rtl:space-x-reverse text-indigo-700">
             <a href="{{ route('home') }}" class="hover:underline">الرئيسية</a>
             <a href="{{ route('posts.byCategory', 'love-table') }}" class="hover:underline">طاولة طعام الحب</a>
             <a href="{{ route('posts.byCategory', 'desert-flower') }}" class="hover:underline">زهرة الصحراء</a>
@@ -179,5 +182,23 @@
     </footer>
 
 </body>
+{{-- <script>
+let lastScrollTop = 0;
+const footer = document.getElementById('dynamic-footer');
+
+window.addEventListener('scroll', () => {
+    const currentScroll = window.pageYOffset || document.documentElement.scrollTop;
+
+    if (currentScroll > lastScrollTop) {
+        // المستخدم نزل لأسفل ⇒ أظهر الفوتر
+        footer.style.transform = 'translateY(0)';
+    } else {
+        // المستخدم صعد لأعلى ⇒ أخفِ الفوتر
+        footer.style.transform = 'translateY(100%)';
+    }
+
+    lastScrollTop = currentScroll <= 0 ? 0 : currentScroll;
+});
+</script> --}}
 
 </html>

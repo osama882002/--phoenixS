@@ -11,30 +11,36 @@ use Illuminate\Support\Facades\Auth;
 class CommentController extends Controller
 {
     use AuthorizesRequests;
-    public function reply(Request $request, Comment $comment)
-    {
-        $request->validate(['body' => 'required|string']);
+    // public function reply(Request $request, Comment $comment)
+    // {
+    //     $request->validate(['body' => 'required|string']);
 
-        $reply = new Comment([
-            'user_id'   => Auth::id(),
-            'post_id'   => $comment->post_id,
-            'parent_id' => $comment->id,
-            'body'      => $request->body,
-        ]);
+    //     $reply = new Comment([
+    //         'user_id'   => Auth::id(),
+    //         'post_id'   => $comment->post_id,
+    //         'parent_id' => $comment->id,
+    //         'body'      => $request->body,
+    //     ]);
 
-        $reply->save();
+    //     $reply->save();
 
-        return response()->json([
-            'body' => $reply->body,
-            'user_name' => auth::user()->name,
-        ]);
-    }
+    //     return response()->json([
+    //         'body' => $reply->body,
+    //         'user_name' => auth::user()->name,
+    //     ]);
+    // }
 
     public function destroy(Comment $comment)
     {
         $this->authorize('delete', $comment);
 
+        $this->authorize('delete', $comment);
+        $postId = $comment->post_id;
         $comment->delete();
-        return back()->with('success', 'تم حذف التعليق بنجاح.');
-    }
+    
+        return response()->json([
+            'success' => true,
+            'message' => 'تم حذف التعليق بنجاح'
+        ]);
+}
 }

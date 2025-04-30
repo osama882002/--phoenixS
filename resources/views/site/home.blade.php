@@ -3,17 +3,17 @@
 
 @section('content')
     @auth
-    <b>
-        <div class="bg-yellow-100 p-4 mt-4 rounded text-sm">
-            دور المستخدم الحالي:
-            @foreach (auth()->user()->getRoleNames() as $role)
-                <span class="font-bold text-indigo-600">{{ $role }}</span>
-            @endforeach
-            @if (Auth::check())
-                <p> مرحبا  <span class="font-bold text-indigo-600">{{ Auth::user()->name }}</span> 😊</p>
-            @endif
-        </div>
-    </b>
+        <b>
+            <div class="bg-yellow-100 p-4 mt-4 rounded text-sm">
+                دور المستخدم الحالي:
+                @foreach (auth()->user()->getRoleNames() as $role)
+                    <span class="font-bold text-indigo-600">{{ $role }}</span>
+                @endforeach
+                @if (Auth::check())
+                    <p> مرحبا <span class="font-bold text-indigo-600">{{ Auth::user()->name }}</span> 😊</p>
+                @endif
+            </div>
+        </b>
     @endauth
     <div class="flex justify-end mb-4">
         <form method="GET" class="flex items-center gap-2">
@@ -43,7 +43,7 @@
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 <!-- مائدة الحب -->
                 <a href="{{ route('posts.byCategory', 'love-table') }}"
-                    class="block bg-white shadow hover:shadow-lg rounded-xl overflow-hidden transition-all">
+                    class="block bg-white rounded-xl overflow-hidden transform transition duration-300 hover:scale-105 hover:-translate-y-1 shadow hover:shadow-2xl">
                     <img src="https://source.unsplash.com/600x400/?family,dinner" alt="مائدة الحب"
                         class="w-full h-48 object-cover">
                     <div class="p-4">
@@ -54,7 +54,7 @@
 
                 <!-- زهرة الصحراء -->
                 <a href="{{ route('posts.byCategory', 'desert-flower') }}"
-                    class="block bg-white shadow hover:shadow-lg rounded-xl overflow-hidden transition-all">
+                    class="block bg-white rounded-xl overflow-hidden transform transition duration-300 hover:scale-105 hover:-translate-y-1 shadow hover:shadow-2xl">
                     <img src="https://source.unsplash.com/600x400/?desert,flower" alt="زهرة الصحراء"
                         class="w-full h-48 object-cover">
                     <div class="p-4">
@@ -65,7 +65,7 @@
 
                 <!-- الوعي الصحي -->
                 <a href="{{ route('posts.byCategory', 'health-awareness') }}"
-                    class="block bg-white shadow hover:shadow-lg rounded-xl overflow-hidden transition-all">
+                    class="block bg-white rounded-xl overflow-hidden transform transition duration-300 hover:scale-105 hover:-translate-y-1 shadow hover:shadow-2xl">
                     <img src="https://source.unsplash.com/600x400/?healthcare,medical" alt="الوعي الصحي"
                         class="w-full h-48 object-cover">
                     <div class="p-4">
@@ -76,7 +76,7 @@
 
                 <!-- أصوات الحرب -->
                 <a href="{{ route('posts.byCategory', 'voices-of-war') }}"
-                    class="block bg-white shadow hover:shadow-lg rounded-xl overflow-hidden transition-all">
+                    class="block bg-white rounded-xl overflow-hidden transform transition duration-300 hover:scale-105 hover:-translate-y-1 shadow hover:shadow-2xl">
                     <img src="https://source.unsplash.com/600x400/?war,destruction" alt="أصوات الحرب"
                         class="w-full h-48 object-cover">
                     <div class="p-4">
@@ -87,7 +87,7 @@
 
                 <!-- منصة الذكريات -->
                 <a href="{{ route('posts.byCategory', 'memories') }}"
-                    class="block bg-white shadow hover:shadow-lg rounded-xl overflow-hidden transition-all">
+                    class="block bg-white rounded-xl overflow-hidden transform transition duration-300 hover:scale-105 hover:-translate-y-1 shadow hover:shadow-2xl">
                     <img src="https://source.unsplash.com/600x400/?memories,album" alt="منصة الذكريات"
                         class="w-full h-48 object-cover">
                     <div class="p-4">
@@ -98,7 +98,7 @@
 
                 <!-- نصائح الطقس -->
                 <a href="{{ route('posts.byCategory', 'weather-tips') }}"
-                    class="block bg-white shadow hover:shadow-lg rounded-xl overflow-hidden transition-all">
+                    class="block bg-white rounded-xl overflow-hidden transform transition duration-300 hover:scale-105 hover:-translate-y-1 shadow hover:shadow-2xl">
                     <img src="https://source.unsplash.com/600x400/?weather,clouds" alt="نصائح الطقس"
                         class="w-full h-48 object-cover">
                     <div class="p-4">
@@ -108,6 +108,10 @@
                 </a>
             </div>
         </div>
+
+
+
+
 
 
 
