@@ -104,7 +104,7 @@
         </div>
     </div>
 
-    <script>
+    {{-- <script>
         function deleteNotification(id) {
             if (!confirm('هل أنت متأكد من حذف هذا الإشعار؟')) return;
             fetch('/admin/notifications/' + id, {
@@ -130,5 +130,9 @@
             toast.classList.remove('hidden');
             setTimeout(() => toast.classList.add('hidden'), 2000);
         }
-    </script>
+    </script> --}}
+@section('scripts')
+<script src="{{ asset('assets/js/admin/notifications.js') }}" ></script>
 @endsection
+@endsection
+

@@ -182,23 +182,6 @@
     </footer>
 
 </body>
-{{-- <script>
-let lastScrollTop = 0;
-const footer = document.getElementById('dynamic-footer');
 
-window.addEventListener('scroll', () => {
-    const currentScroll = window.pageYOffset || document.documentElement.scrollTop;
-
-    if (currentScroll > lastScrollTop) {
-        // المستخدم نزل لأسفل ⇒ أظهر الفوتر
-        footer.style.transform = 'translateY(0)';
-    } else {
-        // المستخدم صعد لأعلى ⇒ أخفِ الفوتر
-        footer.style.transform = 'translateY(100%)';
-    }
-
-    lastScrollTop = currentScroll <= 0 ? 0 : currentScroll;
-});
-</script> --}}
 
 </html>

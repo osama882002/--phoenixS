@@ -34,13 +34,14 @@ class CommentController extends Controller
     {
         $this->authorize('delete', $comment);
 
-        $this->authorize('delete', $comment);
         $postId = $comment->post_id;
         $comment->delete();
     
         return response()->json([
             'success' => true,
-            'message' => 'تم حذف التعليق بنجاح'
+            'message' => 'تم حذف التعليق بنجاح',
+            'remaining_comments' => Comment::where('post_id', $postId)->count(),
+
         ]);
 }
 }

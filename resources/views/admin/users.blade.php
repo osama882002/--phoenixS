@@ -18,12 +18,15 @@
             </thead>
             <tbody>
                 @foreach ($users as $user)
-                    <tr class="border-b">
-                        <td class="py-3 px-6">{{ $user->id }}</td>
+                <tr class="border-b" data-user-id="{{ $user->id }}">
+                    <td class="py-3 px-6">{{ $user->id }}</td>
                         <td class="py-3 px-6">{{ $user->name }}</td>
                         <td class="py-3 px-6">{{ $user->email }}</td>
                         <td class="py-3 px-6">
-                            <select onchange="updateUserRole({{ $user->id }}, this.value)" class="border rounded p-1">
+                            <select data-user-id="{{ $user->id }}" 
+                                data-previous-role="{{ $user->roles->first()->name ?? 'user' }}"
+                                onchange="updateUserRole({{ $user->id }}, this.value)" 
+                                class="border rounded p-1">
                                 <option value="user" {{ $user->hasRole('user') ? 'selected' : '' }}>مستخدم</option>
                                 <option value="admin" {{ $user->hasRole('admin') ? 'selected' : '' }}>مشرف</option>
                             </select>
@@ -44,58 +47,7 @@
     <div id="toast" class="fixed bottom-5 right-5 bg-green-500 text-white px-4 py-2 rounded hidden z-50"></div>
 </div>
 
-<script>
-function deleteUser(userId) {
-    if (!confirm('هل تريد بالتأكيد حذف هذا المستخدم؟')) return;
 
-    fetch(`/admin/users/${userId}`, {
-        method: 'DELETE',
-        headers: {
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-            'Accept': 'application/json'
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            showToast('تم حذف المستخدم بنجاح ✅');
-            setTimeout(() => location.reload(), 1500);
-        } else {
-            showToast('❌ حدث خطأ، لم يتم الحذف.');
-        }
-    })
-    .catch(error => console.error(error));
-}
+    <script src="{{ asset('assets/js/admin/users.js') }}"></script>
 
-function updateUserRole(userId, role) {
-    fetch(`/admin/users/${userId}/role`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-            'Accept': 'application/json'
-        },
-        body: JSON.stringify({ role })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            showToast('تم تحديث الدور بنجاح ✅');
-        } else {
-            showToast('❌ حدث خطأ أثناء التحديث.');
-        }
-    })
-    .catch(error => console.error(error));
-}
-
-function showToast(message) {
-    const toast = document.getElementById('toast');
-    toast.textContent = message;
-    toast.classList.remove('hidden');
-
-    setTimeout(() => {
-        toast.classList.add('hidden');
-    }, 2000);
-}
-</script>
 @endsection

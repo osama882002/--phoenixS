@@ -34,7 +34,10 @@
                 
 
                 <button onclick="deleteNotification('{{ $notification->id }}')"
-                    class="ml-4 text-sm text-red-600 hover:underline">🗑️ حذف</button>
+                    data-notification-id="{{ $notification->id }}"
+                    class="ml-4 text-sm text-red-600 hover:underline">
+                    🗑️ حذف
+                </button>
             </div>
         @empty
             <div class="bg-gray-100 text-center p-4 text-gray-600 rounded">
@@ -47,47 +50,7 @@
         ✅ تم حذف الإشعار بنجاح!
     </div>
 
-    <script>
-        function deleteNotification(id) {
-            if (!confirm('هل أنت متأكد أنك تريد حذف هذا الإشعار؟')) {
-                return;
-            }
-
-            fetch('/notifications/' + id, {
-                    method: 'DELETE',
-                    headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                        'Accept': 'application/json'
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        document.getElementById('notification-' + id)?.remove();
-                        showToast();
-                    } else {
-                        alert('حدث خطأ أثناء الحذف.');
-                    }
-                })
-                .catch(error => {
-                    console.error(error);
-                    alert('حدث خطأ أثناء الاتصال.');
-                });
-        }
-
-        function showToast() {
-            const toast = document.getElementById('toast-success');
-            toast.classList.remove('hidden');
-            toast.classList.remove('opacity-0');
-            toast.classList.add('opacity-100');
-
-            setTimeout(() => {
-                toast.classList.add('opacity-0');
-            }, 2000);
-
-            setTimeout(() => {
-                toast.classList.add('hidden');
-            }, 2500);
-        }
-    </script>
+@endsection
+@section('scripts')
+    <script src="{{ asset('assets/js/user/notifications.js') }}"></script>
 @endsection

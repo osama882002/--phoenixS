@@ -19,7 +19,7 @@
             </thead>
             <tbody>
                 @foreach ($posts as $post)
-                    <tr class="border-b">
+                <tr class="border-b" data-post-id="{{ $post->id }}">
                         <td class="py-3 px-6">{{ $post->id }}</td>
                         <td class="py-3 px-6">{{ $post->title }}</td>
                         <td class="py-3 px-6">{{ $post->user->name ?? '—' }}</td>
@@ -51,40 +51,7 @@
     <div id="toast" class="fixed bottom-5 right-5 bg-green-500 text-white px-4 py-2 rounded hidden z-50"></div>
 </div>
 
-<script>
-function deletePost(postId) {
-    if (!confirm('هل تريد بالتأكيد حذف هذا المقال؟')) return;
-
-    fetch(`/admin/posts/${postId}`, {
-        method: 'DELETE',
-        headers: {
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-            'Accept': 'application/json'
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            showToast('تم حذف المقال ✅');
-            setTimeout(() => location.reload(), 1500);
-        } else {
-            showToast('❌ حدث خطأ أثناء الحذف.');
-        }
-    })
-    .catch(error => {
-        console.error(error);
-        showToast('❌ فشل الحذف.');
-    });
-}
-
-function showToast(message) {
-    const toast = document.getElementById('toast');
-    toast.textContent = message;
-    toast.classList.remove('hidden');
-
-    setTimeout(() => {
-        toast.classList.add('hidden');
-    }, 2000);
-}
-</script>
+@section('scripts')
+    <script src="{{ asset('assets/js/admin/posts.js') }}"></script>
+@endsection
 @endsection
