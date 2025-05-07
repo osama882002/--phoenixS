@@ -58,13 +58,13 @@ class PostController extends Controller
             'media' => 'nullable|file|mimes:jpeg,png,jpg,mp4',
             'category_id' => 'required|exists:categories,id',
         ]);
-    
+
         $mediaPath = $request->hasFile('media')
             ? $request->file('media')->store('uploads', 'public')
             : null;
-    
+
         $status = auth::user()->hasRole('admin') ? 'approved' : 'pending';
-    
+
         $post = Post::create([
             'user_id'     => Auth::id(),
             'title'       => substr($request->idea, 0, 60),
@@ -73,32 +73,43 @@ class PostController extends Controller
             'category_id' => $request->category_id,
             'status'      => $status,
         ]);
-    
+
         // إشعار المشرفين فقط إذا لم يكن أدمن
         if (!auth::user()->hasRole('admin')) {
             $admins = User::role('admin')->get();
             foreach ($admins as $admin) {
-                $admin->notify(new \App\Notifications\NewPostSubmitted($post));
+                $post->load('user'); // تأكد من تحميل علاقة المستخدم
+                $admin->notify(new NewPostSubmitted($post));
             }
         }
-    
+
         return redirect()->route(
             auth::user()->hasRole('admin') ? 'admin.posts.index' : 'posts.my'
         )->with('success', auth::user()->hasRole('admin') ? 'تم نشر المقال مباشرة.' : 'تم إرسال المقال للمراجعة.');
     }
-    
+
 
     public function show(Post $post)
-{
-    $user = auth::user();
+    {
+        $user = auth::user();
 
-    // السماح لصاحب المقال بمشاهدة مقاله مهما كانت الحالة
-    if ($post->status !== 'approved' && $post->user_id !== $user->id) {
-        abort(403, 'ليس لديك إذن لعرض هذا المقال.');
+        // السماح لصاحب المقال بمشاهدة مقاله مهما كانت الحالة
+        if ($post->status !== 'approved' && $post->user_id !== $user->id) {
+            abort(403, 'ليس لديك إذن لعرض هذا المقال.');
+        }
+
+        // استرجاع 3 مقالات مشابهة (نفس القسم، غير المقال الحالي)
+        $relatedPosts = Post::where('category_id', $post->category_id)
+            ->where('id', '!=', $post->id)
+            ->where('status', 'approved')
+            ->withCount('likes')
+            ->orderByDesc('likes_count') // الأكثر إعجابًا أولاً
+            ->orderByDesc('created_at')  // ثم الأحدث
+            ->limit(3)
+            ->get();
+
+        return view('site.show', compact('post', 'relatedPosts'));
     }
-
-    return view('site.show', compact('post'));
-}
 
     public function myArticles(Request $request)
     {

@@ -1,27 +1,19 @@
 {{-- resources/views/admin/review-posts.blade.php --}}
-@extends('layouts.app')
+@php
+    // تعليم الإشعارات كمقروءة عند تحميل الصفحة
+    if(auth()->check()) {
+        auth()->user()->unreadNotifications->markAsRead();
+    }
+@endphp
 
+@extends('layouts.app')
 @section('content')
     <div class="mb-10">
         <h1 class="text-2xl font-bold text-indigo-700">مراجعة المقالات المرسلة</h1>
         <p class="text-gray-600 mt-1">راجع ووافق أو ارفض المقالات التي أرسلها المستخدمون.</p>
     </div>
 
-    @if (auth()->user()->unreadNotifications->count())
-        <div class="bg-red-100 text-red-700 p-4 rounded mb-6">
-            <strong>إشعارات جديدة:</strong>
-            <ul class="mt-2 list-disc pr-6">
-                @foreach (auth()->user()->unreadNotifications as $notification)
-                    <li>
-                        <span class="text-sm">
-                            مقالة جديدة: <strong>{{ $notification->data['title'] ?? 'عنوان غير متوفر' }}</strong> بواسطة
-                            {{ $notification->data['author'] }}
-                        </span>
-                    </li>
-                @endforeach
-            </ul>
-        </div>
-    @endif
+
 
     @if ($pendingPosts->isEmpty())
         <div class="bg-yellow-100 p-4 rounded text-yellow-800">لا توجد مقالات قيد المراجعة حاليًا.</div>

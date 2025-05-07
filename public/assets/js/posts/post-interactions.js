@@ -159,6 +159,26 @@ function updateCommentsCounter(postId, change) {
         }
     }
 }
+// دالة مشاركة المقال
+function sharePost(title, url) {
+    if (navigator.share) {
+        navigator.share({
+            title: title,
+            url: url
+        }).catch(err => {
+            console.error('Error sharing:', err);
+        });
+    } else {
+        // Fallback for browsers that don't support Web Share API
+        const input = document.createElement('input');
+        input.value = url;
+        document.body.appendChild(input);
+        input.select();
+        document.execCommand('copy');
+        document.body.removeChild(input);
+        alert('تم نسخ رابط المقال!');
+    }
+}
 
 // دالة للتحقق من وجود تعليقات
 function checkIfCommentsEmpty(postId) {

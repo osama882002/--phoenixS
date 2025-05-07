@@ -14,6 +14,7 @@
                     <th class="py-3 px-6 text-center">القسم</th>
                     <th class="py-3 px-6 text-center">الحالة</th>
                     <th class="py-3 px-6 text-center">تاريخ الإضافة</th>
+                    <th class="py-3 px-6 text-center">عرض المقال</th>
                     <th class="py-3 px-6 text-center">خيارات</th>
                 </tr>
             </thead>
@@ -38,6 +39,7 @@
                             @endswitch
                         </td>
                         <td class="py-3 px-6">{{ $post->created_at->diffForHumans() }}</td>
+                        <td class="py-3 px-6"><a href="{{ route('posts.show', $post->id) }}">عرض</a></td>
                         <td class="py-3 px-6">
                             <button onclick="deletePost({{ $post->id }})"
                                     class="text-red-600 hover:underline text-sm">🗑️ حذف</button>

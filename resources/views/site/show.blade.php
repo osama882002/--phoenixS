@@ -1,3 +1,4 @@
+{{-- resources/views/site/show.blade.php --}}
 @extends('layouts.app')
 
 @section('content')
@@ -24,7 +25,7 @@
                         </video>
                     @else
                         <img src="{{ asset('storage/' . $post->media_path) }}"
-                        class="rounded-lg shadow w-[200px] h-[200px] object-cover " />
+                            class="rounded-lg shadow w-[200px] h-[200px] object-cover " />
                     @endif
                 </div>
             @endif
@@ -45,6 +46,10 @@
                 <a href="javascript:void(0);" onclick="toggleComments({{ $post->id }})" class="hover:underline">
                     💬 التعليقات ({{ $post->topLevelComments->count() }})
                 </a>
+                <button onclick="sharePost('{{ $post->title }}', '{{ route('posts.show', $post) }}')"
+                    class="flex items-center gap-1 text-lg hover:text-blue-500">
+                    ↗️ <span class="text-sm">مشاركة</span>
+                </button>
             </div>
 
             @auth
@@ -109,7 +114,47 @@
                 </a>
             </div>
         </div>
-    </div>
 
+    </div>
+    {{-- مقالات مشابهة --}}
+    @if ($relatedPosts->count())
+        <div class="mt-12">
+            <h2 class="text-xl font-bold text-gray-800 mb-6 border-b pb-2">مقالات مشابهة في قسم {{ $post->category->name }}
+            </h2>
+
+            <div class="grid md:grid-cols-3 gap-6">
+                @foreach ($relatedPosts as $related)
+                    <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+                        <a href="{{ route('posts.show', $related) }}">
+                            @if ($related->media_path)
+                                <div class="h-48 overflow-hidden">
+                                    @if (Str::endsWith($related->media_path, ['.mp4']))
+                                        <video class="w-full h-full object-cover">
+                                            <source src="{{ asset('storage/' . $related->media_path) }}" type="video/mp4">
+                                        </video>
+                                    @else
+                                        <img src="{{ asset('storage/' . $related->media_path) }}"
+                                            class="w-full h-full object-cover" loading="lazy" alt="{{ $related->title }}">
+                                    @endif
+                                </div>
+                            @else
+                                <div class="h-48 bg-gray-100 flex items-center justify-center text-gray-400">
+                                    لا توجد صورة
+                                </div>
+                            @endif
+
+                            <div class="p-4">
+                                <h3 class="font-semibold text-lg mb-2 line-clamp-2">{{ $related->title }}</h3>
+                                <div class="flex items-center justify-between text-sm text-gray-500">
+                                    <span>{{ $related->created_at->diffForHumans() }}</span>
+                                    <span>❤️ {{ $related->likes_count }}</span>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+    @endif
     <script src="{{ asset('assets/js/posts/post-interactions.js') }}"></script>
 @endsection

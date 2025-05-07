@@ -120,7 +120,6 @@
             <h2 class="text-xl font-semibold mb-4">أحدث المقالات</h2>
             <div class="grid md:grid-cols-3 gap-6">
                 @foreach ($posts as $post)
-                
                     @include('components.post-card', ['post' => $post])
                 @endforeach
             </div>

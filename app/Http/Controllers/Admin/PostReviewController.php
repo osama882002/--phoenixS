@@ -8,15 +8,20 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use App\Http\Controllers\Controller;
 use App\Models\Post;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class PostReviewController extends Controller
 {
     use AuthorizesRequests;
     public function index()
     {
+            // // تعليم جميع الإشعارات كمقروءة عند زيارة الصفحة
+            //   Auth::user()->unreadNotifications->markAsRead();
         $this->authorize('review', Post::class);
 
-        $pendingPosts = Post::where('status', 'pending')->get();
+        $pendingPosts = Post::with(['user', 'category']) // تحميل العلاقات
+        ->where('status', 'pending')
+        ->get();
         return view('admin.review-posts', compact('pendingPosts'));
     }
 

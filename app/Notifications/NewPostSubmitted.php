@@ -30,6 +30,8 @@ class NewPostSubmitted extends Notification
             'post_id' => $this->post->id,
             'status' => 'pending', // لإظهار زر القبول والرفض
             'message' => 'مقال جديد بانتظار المراجعة: ' . $this->post->title,
+            'url' => route('admin.posts.review') // إضافة رابط المراجعة
+
         ];
     }
 }
