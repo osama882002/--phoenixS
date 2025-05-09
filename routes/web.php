@@ -5,11 +5,13 @@ use App\Http\Controllers\Admin\AdminNotificationController;
 use App\Http\Controllers\Admin\PostReviewController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\User\UserNotificationsController;
+use App\Http\Controllers\WeatherController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Site\PostController;
 use App\Models\Post;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
 
 // صفحات عامة
 Route::get('/', function (Request $request) {
@@ -31,7 +33,7 @@ Route::get('/search', [PostController::class, 'search'])->name('posts.search');
 
 // صفحات الأقسام
 Route::get('/{categorySlug}', [PostController::class, 'indexByCategory'])
-    ->where('categorySlug', 'love-table|desert-flower|health-awareness|voices-of-war|memories|weather-tips')
+    ->where('categorySlug', 'love-table|desert-flower|health-awareness|voices-of-war|memories')
     ->name('posts.byCategory');
 
 // التفاعل مع المقالات
@@ -91,6 +93,14 @@ Route::middleware('auth')->prefix('notifications')->group(function () {
     Route::post('/read', [UserNotificationsController::class, 'markAllAsRead'])->name('user.notifications.read');
     Route::delete('/{id}', [UserNotificationsController::class, 'destroy'])->name('user.notifications.destroy');
 });
+
+
+
+
+Route::get('/weather-tips', [WeatherController::class, 'showWeatherTips'])->name('weather.tips');
+Route::get('/api/weather', [WeatherController::class, 'index'])->name('api.weather');
+
+
 
 // Laravel Breeze
 require __DIR__.'/auth.php';

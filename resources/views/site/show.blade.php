@@ -7,7 +7,7 @@
         <div class="max-w-5xl mx-auto p-6 bg-white rounded-xl shadow">
 
             {{-- عنوان المقال
-            <h1 class="text-3xl font-bold text-indigo-700 mb-4">{{ $post->title }}</h1> --}}
+            <h1 class="text-3xl font-bold text-indigo-700 mb-4">{{ $post->title }}</h1>  --}}
 
             {{-- معلومات إضافية --}}
             <p class="text-sm text-gray-600 mb-2">
@@ -25,7 +25,7 @@
                         </video>
                     @else
                         <img src="{{ asset('storage/' . $post->media_path) }}"
-                            class="rounded-lg shadow w-[200px] h-[200px] object-cover " />
+                            class="rounded-lg shadow w-[400px] h-[400px] object-cover " />
                     @endif
                 </div>
             @endif
@@ -52,11 +52,11 @@
                 </button>
             </div>
 
-            @auth
+            {{-- @auth
                 @if (auth()->user()->unreadNotifications->where('data.post_id', $post->id)->count())
                     <div class="mt-2 text-xs text-green-600">📌 لديك تفاعل جديد على هذا المقال</div>
                 @endif
-            @endauth
+            @endauth --}}
 
             {{-- التعليقات --}}
             <div class="mt-6 bg-gray-50 p-4 rounded shadow-sm hidden" id="comments-{{ $post->id }}">

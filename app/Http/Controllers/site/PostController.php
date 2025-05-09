@@ -83,9 +83,11 @@ class PostController extends Controller
             }
         }
 
-        return redirect()->route(
-            auth::user()->hasRole('admin') ? 'admin.posts.index' : 'posts.my'
-        )->with('success', auth::user()->hasRole('admin') ? 'تم نشر المقال مباشرة.' : 'تم إرسال المقال للمراجعة.');
+        // return redirect()->route(
+        //     auth::user()->hasRole('admin') ? 'admin.posts.index' : 'posts.my'
+        // )->with('success', auth::user()->hasRole('admin') ? 'تم نشر المقال مباشرة.' : 'تم إرسال المقال للمراجعة.');
+    
+        return redirect()->route('posts.my')->with('success', auth::user()->hasRole('admin') ? 'تم نشر المقال مباشرة.' : 'تم إرسال المقال للمراجعة.');
     }
 
 

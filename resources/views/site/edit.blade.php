@@ -9,10 +9,10 @@
         @csrf
         @method('PUT')
 
-        <div>
+        {{-- <div>
             <label class="block text-sm font-medium text-gray-700">عنوان المقال</label>
             <input type="text" name="title" value="{{ old('title', $post->title) }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" required>
-        </div>
+        </div> --}}
 
         <div>
             <label class="block text-sm font-medium text-gray-700">نص المقال</label>

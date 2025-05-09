@@ -30,6 +30,7 @@ return [
     |                    "redis", "dynamodb", "octane", "null"
     |
     */
+    
 
     'stores' => [
 
@@ -89,9 +90,16 @@ return [
         'octane' => [
             'driver' => 'octane',
         ],
+        'posts' => [
+        'driver' => 'database',
+        'table' => 'cache_posts',
+        'ttl' => 3600,
+    ],
+        
 
     ],
 
+    
     /*
     |--------------------------------------------------------------------------
     | Cache Key Prefix
