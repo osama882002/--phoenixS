@@ -49,8 +49,8 @@
         class="hidden fixed bottom-5 right-5 bg-green-600 text-white px-4 py-2 rounded shadow-lg transition-opacity duration-500 z-50 opacity-0">
         ✅ تم حذف الإشعار بنجاح!
     </div>
+    <div id="toast" class="fixed bottom-5 right-5 bg-green-600 text-white px-4 py-2 rounded shadow hidden z-50"></div>
 
 @endsection
-@section('scripts')
+
     <script src="{{ asset('assets/js/user/notifications.js') }}"></script>
-@endsection

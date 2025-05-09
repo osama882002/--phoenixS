@@ -166,7 +166,9 @@ class PostController extends Controller
 
         return response()->json([
             'liked' => !$likedBefore,
-            'likes_count' => $post->likes()->count()
+            'likes_count' => $post->likes()->count(),
+            'message' => !$likedBefore ? 'تم الإعجاب بالمقال' : 'تم إلغاء الإعجاب'
+
         ]);
     }
 
@@ -185,6 +187,8 @@ class PostController extends Controller
         }
 
         return response()->json([
+            'success' => true,
+            'message' => '✅ تم إضافة التعليق بنجاح',
             'body' => $request->body,
             'user_name' => auth::user()->name,
             'comment_id' => $comment->id,
@@ -202,13 +206,13 @@ class PostController extends Controller
         $this->authorize('update', $post); // للتحقق من الصلاحية
 
         $request->validate([
-            'title' => 'required|string|max:255',
+            // 'title' => 'required|string|max:255',
             'body' => 'required|string',
             'media' => 'nullable|file|mimes:jpeg,png,jpg,mp4'
         ]);
 
         $data = [
-            'title' => $request->title,
+            // 'title' => $request->title,
             'body' => $request->body,
         ];
 

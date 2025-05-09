@@ -9,20 +9,18 @@ function deletePost(postId) {
             'Accept': 'application/json'
         }
     })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            showToast('تم حذف المقال ✅');
-            // إزالة الصف من الجدول دون تحديث الصفحة
-            document.querySelector(`tr[data-post-id="${postId}"]`)?.remove();
-        } else {
-            showToast('❌ حدث خطأ أثناء الحذف.');
-        }
-    })
-    .catch(error => {
-        console.error(error);
-        showToast('❌ فشل الحذف.');
-    });
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.querySelector(`tr[data-post-id="${postId}"]`)?.remove();
+            }
+            window.showToast(data.message, data.success);
+        })
+
+        .catch(error => {
+            console.error(error);
+            showToast('❌ فشل الحذف.');
+        });
 }
 
 function showToast(message) {

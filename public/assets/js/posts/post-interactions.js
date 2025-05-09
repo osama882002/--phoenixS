@@ -1,3 +1,4 @@
+// public/js/posts/post-interactions.js
 // دالة لعرض/إخفاء التعليقات
 function toggleComments(postId) {
     const el = document.getElementById('comments-' + postId);
@@ -46,21 +47,28 @@ function collapseComments(postId) {
 // دالة للإعجاب/إلغاء الإعجاب
 function toggleLike(postId) {
     fetch('/posts/' + postId + '/like', {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                'Accept': 'application/json',
-            },
-        })
-        .then(response => response.json())
-        .then(data => {
-            const likeButton = document.getElementById('like-button-' + postId);
-            const likeCount = document.getElementById('like-count-' + postId);
-            likeButton.innerHTML = (data.liked ? '💔 إلغاء الإعجاب' : '❤️ أعجبني') +
-                ` (<span id="like-count-${postId}">${data.likes_count}</span>)`;
-        })
-        .catch(error => console.error(error));
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            'Accept': 'application/json',
+        },
+    })
+    .then(response => response.json())
+    .then(data => {
+        const likeButton = document.getElementById('like-button-' + postId);
+        const likeCount = document.getElementById('like-count-' + postId);
+
+        likeButton.innerHTML = (data.liked ? '💔 إلغاء الإعجاب' : '❤️ أعجبني') +
+            ` (<span id="like-count-${postId}">${data.likes_count}</span>)`;
+
+        window.showToast(data.liked ? '✅ تم تسجيل الإعجاب' : '❌ تم إلغاء الإعجاب', true);
+    })
+    .catch(error => {
+        console.error(error);
+        window.showToast('❌ حدث خطأ أثناء تسجيل الإعجاب', false);
+    });
 }
+
 
 // دالة لإضافة تعليق جديد
 async function submitComment(event, postId) {
@@ -89,25 +97,22 @@ async function submitComment(event, postId) {
         newComment.innerHTML = `
             <p class="text-sm text-gray-800">${result.body}</p>
             <span class="text-xs text-gray-500">بواسطة ${result.user_name} - قبل لحظات</span>
-            ${result.can_delete ? `<button onclick="deleteComment('${result.comment_id}', '${postId}')" class="text-xs text-red-600 hover:underline ml-2">🗑️ حذف</button>` : ''}
+            ${result.can_delete ? `<button onclick="deleteComment(event, '${result.comment_id}', '${postId}')" class="text-xs text-red-600 hover:underline ml-2">🗑️ حذف</button>` : ''}
         `;
 
         commentsContainer.prepend(newComment);
-
-        // تحديث العداد
         updateCommentsCounter(postId, 1);
-
         document.getElementById('comment-body-' + postId).value = '';
+
+        window.showToast('✅ تم إضافة التعليق بنجاح', true);
     } catch (error) {
         console.error(error);
-        alert('حدث خطأ أثناء إضافة التعليق');
+        window.showToast('❌ حدث خطأ أثناء إضافة التعليق', false);
     }
 }
 
 // دالة لحذف التعليق
-async function deleteComment(commentId, postId) {
-    // if (!confirm('هل أنت متأكد من حذف هذا التعليق؟')) return;
-
+async function deleteComment(event, commentId, postId) {
     const deleteButton = event.target;
     deleteButton.disabled = true;
     deleteButton.textContent = 'جاري الحذف...';
@@ -121,9 +126,13 @@ async function deleteComment(commentId, postId) {
             }
         });
 
-        if (!response.ok) throw new Error();
+        const result = await response.json();
 
-        // إزالة التعليق بسلاسة
+        if (!result.success) {
+            window.showToast(result.message || '❌ فشل حذف التعليق', false);
+            return;
+        }
+
         const commentElement = document.querySelector(`[data-comment-id="${commentId}"]`);
         if (commentElement) {
             commentElement.style.transition = 'all 0.3s';
@@ -131,23 +140,25 @@ async function deleteComment(commentId, postId) {
             commentElement.style.height = '0';
             commentElement.style.margin = '0';
             commentElement.style.padding = '0';
-            
+
             setTimeout(() => {
                 commentElement.remove();
                 updateCommentsCounter(postId, -1);
                 checkIfCommentsEmpty(postId);
             }, 300);
         }
+
+        window.showToast(result.message || '✅ تم حذف التعليق بنجاح', true);
     } catch (error) {
         console.error('Error:', error);
-        alert('حدث خطأ أثناء حذف التعليق');
+        window.showToast('❌ حدث خطأ أثناء حذف التعليق', false);
     } finally {
         deleteButton.disabled = false;
         deleteButton.textContent = '🗑️ حذف';
     }
 }
 
-// دالة مساعدة لتحديث عداد التعليقات
+// تحديث عداد التعليقات
 function updateCommentsCounter(postId, change) {
     const commentsLink = document.querySelector(`#post-${postId} a[onclick*="toggleComments(${postId})"]`);
     if (commentsLink) {
@@ -159,28 +170,26 @@ function updateCommentsCounter(postId, change) {
         }
     }
 }
-// دالة مشاركة المقال
+
+// مشاركة المقال
 function sharePost(title, url) {
     if (navigator.share) {
-        navigator.share({
-            title: title,
-            url: url
-        }).catch(err => {
+        navigator.share({ title: title, url: url }).catch(err => {
             console.error('Error sharing:', err);
+            window.showToast('❌ فشل مشاركة الرابط', false);
         });
     } else {
-        // Fallback for browsers that don't support Web Share API
         const input = document.createElement('input');
         input.value = url;
         document.body.appendChild(input);
         input.select();
         document.execCommand('copy');
         document.body.removeChild(input);
-        alert('تم نسخ رابط المقال!');
+        window.showToast('✅ تم نسخ رابط المقال!', true);
     }
 }
 
-// دالة للتحقق من وجود تعليقات
+// التحقق من وجود تعليقات
 function checkIfCommentsEmpty(postId) {
     const commentsContainer = document.getElementById(`comments-container-${postId}`);
     if (commentsContainer && commentsContainer.children.length === 0) {

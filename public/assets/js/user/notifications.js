@@ -1,6 +1,5 @@
-// public/js/user/notifications.js
-function deleteNotification(id) {
-    if (!confirm('هل أنت متأكد أنك تريد حذف هذا الإشعار؟')) return;
+window.deleteNotification = function (id) {
+    // if (!confirm('هل أنت متأكد من حذف هذا الإشعار؟')) return;
 
     fetch('/notifications/' + id, {
         method: 'DELETE',
@@ -13,16 +12,16 @@ function deleteNotification(id) {
     .then(data => {
         if (data.success) {
             removeNotificationElement(id);
-            showToast('✅ تم حذف الإشعار بنجاح', true);
+            window.showToast('✅ تم حذف الإشعار بنجاح', true);
         } else {
-            showToast('❌ حدث خطأ أثناء الحذف', false);
+            window.showToast('❌ حدث خطأ أثناء الحذف', false);
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        showToast('❌ فشل الاتصال بالخادم', false);
+        window.showToast('❌ فشل الاتصال بالخادم', false);
     });
-}
+};
 
 function removeNotificationElement(id) {
     const element = document.getElementById(`notification-${id}`);
@@ -36,15 +35,13 @@ function removeNotificationElement(id) {
     }
 }
 
-function showToast(message, isSuccess) {
-    const toast = document.getElementById('toast-notification');
+window.showToast = function (message, isSuccess) {
+    const toast = document.getElementById('toast');
     if (!toast) return;
 
     toast.textContent = message;
-    toast.className = `fixed bottom-5 right-5 px-4 py-2 rounded shadow-lg z-50 ${
-        isSuccess ? 'bg-green-600' : 'bg-red-600'
-    } text-white transition-opacity duration-500`;
-    
+    toast.className = `fixed bottom-5 right-5 px-4 py-2 rounded shadow-lg z-50 ${isSuccess ? 'bg-green-600' : 'bg-red-600'} text-white transition-opacity duration-500`;
+
     toast.classList.remove('hidden', 'opacity-0');
     toast.classList.add('opacity-100');
 
@@ -52,4 +49,4 @@ function showToast(message, isSuccess) {
         toast.classList.add('opacity-0');
         setTimeout(() => toast.classList.add('hidden'), 500);
     }, 2000);
-}
+};

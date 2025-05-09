@@ -6,6 +6,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Phoenix Soul</title>
+    <!-- Toastr CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
@@ -215,6 +217,22 @@
             <a href="mailto:info@phoenixsoul.org" class="hover:underline">📧 تواصل معنا</a>
         </div>
     </footer>
+
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> <!-- هذا مهم -->
+
+<!-- Toastr JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+<script src="{{ asset('assets/js/helpers/toastr-handler.js') }}"></script>
+<script>
+    @if(session('success'))
+        window.showToast(@json(session('success')), true);
+    @endif
+
+    @if(session('error'))
+        window.showToast(@json(session('error')), false);
+    @endif
+</script>
 </body>
 
 </html>

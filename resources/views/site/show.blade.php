@@ -85,7 +85,7 @@
                                 <span class="text-xs text-gray-500">بواسطة {{ $comment->user->name }} -
                                     {{ $comment->created_at->diffForHumans() }}</span>
                                 @can('delete', $comment)
-                                    <button onclick="deleteComment('{{ $comment->id }}', '{{ $post->id }}')"
+                                    <button onclick="deleteComment(event, '{{ $comment->id }}', '{{ $post->id }}')"
                                         class="text-xs text-red-600 hover:underline ml-2">🗑️ حذف</button>
                                 @endcan
                             </div>

@@ -34,18 +34,19 @@ class AdminDashboardController extends Controller
     public function destroyUser(User $user)
     {
         if ($user->hasRole('admin')) {
-            return response()->json(['error' => 'لا يمكنك حذف مشرف.'], 403);
+            return response()->json(['success' => false, 'message' => '❌ لا يمكنك حذف مشرف.'], 403);
         }
 
         $user->delete();
-        return response()->json(['success' => true]);
+        return response()->json(['success' => true, 'message' => '✅ تم حذف المستخدم بنجاح']);
     }
 
     public function updateUserRole(Request $request, User $user)
     {
         $request->validate(['role' => 'required|string']);
         $user->syncRoles([$request->role]);
-        return response()->json(['success' => true]);
+        return response()->json(['success' => true, 'message' => '✅ تم تحديث دور المستخدم']);
+
     }
 
     public function posts()
@@ -58,6 +59,7 @@ class AdminDashboardController extends Controller
     {
         $post->delete();
 
-        return response()->json(['success' => true]);
+        return response()->json(['success' => true, 'message' => '✅ تم حذف المقال بنجاح']);
+
     }
 }

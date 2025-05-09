@@ -131,8 +131,8 @@
             setTimeout(() => toast.classList.add('hidden'), 2000);
         }
     </script> --}}
-@section('scripts')
+
 <script src="{{ asset('assets/js/admin/notifications.js') }}" ></script>
-@endsection
+
 @endsection
 

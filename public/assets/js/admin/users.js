@@ -1,4 +1,3 @@
-// public/js/admin/users.js
 function deleteUser(userId) {
     if (!confirm('هل تريد بالتأكيد حذف هذا المستخدم؟')) return;
 
@@ -12,16 +11,15 @@ function deleteUser(userId) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            showToast('تم حذف المستخدم بنجاح ✅');
-            // إزالة الصف دون تحديث الصفحة
+            window.showToast('✅ تم حذف المستخدم بنجاح', true);
             document.querySelector(`tr[data-user-id="${userId}"]`)?.remove();
         } else {
-            showToast(data.message || '❌ حدث خطأ، لم يتم الحذف.');
+            window.showToast(data.message || '❌ حدث خطأ، لم يتم الحذف.', false);
         }
     })
     .catch(error => {
         console.error(error);
-        showToast('❌ فشل الاتصال بالخادم.');
+        window.showToast('❌ فشل الاتصال بالخادم.', false);
     });
 }
 
@@ -41,10 +39,9 @@ function updateUserRole(userId, role) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            showToast('تم تحديث الدور بنجاح ✅');
+            window.showToast('✅ تم تحديث الدور بنجاح', true);
         } else {
-            showToast(data.message || '❌ حدث خطأ أثناء التحديث.');
-            // إعادة تعيين القيمة السابقة
+            window.showToast(data.message || '❌ حدث خطأ أثناء التحديث.', false);
             if (selectElement) {
                 const previousRole = selectElement.dataset.previousRole;
                 selectElement.value = previousRole;
@@ -53,20 +50,9 @@ function updateUserRole(userId, role) {
     })
     .catch(error => {
         console.error(error);
-        showToast('❌ فشل الاتصال بالخادم.');
+        window.showToast('❌ فشل الاتصال بالخادم.', false);
     })
     .finally(() => {
         if (selectElement) selectElement.disabled = false;
     });
-}
-
-// يمكن استيراد هذه الدالة من ملف مشترك لاحقًا
-function showToast(message, isSuccess = true) {
-    const toast = document.getElementById('toast');
-    toast.textContent = message;
-    toast.className = `fixed bottom-5 right-5 px-4 py-2 rounded hidden z-50 ${
-        isSuccess ? 'bg-green-500' : 'bg-red-500'
-    } text-white`;
-    toast.classList.remove('hidden');
-    setTimeout(() => toast.classList.add('hidden'), 2000);
 }

@@ -32,9 +32,8 @@ class UserNotificationsController extends Controller
 
         if ($notification) {
             $notification->delete();
-            return response()->json(['success' => true]);
+            return response()->json(['success' => true, 'message' => '✅ تم حذف الإشعار بنجاح']);
         }
-
-        return response()->json(['success' => false], 404);
+        return response()->json(['success' => false, 'message' => '❌ لم يتم العثور على الإشعار'], 404);
     }
 }

@@ -1,3 +1,5 @@
+// public/js/posts/weather.js
+
 function getLocation() {
     console.log("جارٍ محاولة تحديد الموقع...");
     const weatherContainer = document.getElementById('weather-container');

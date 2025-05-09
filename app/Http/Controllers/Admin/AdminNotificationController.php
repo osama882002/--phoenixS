@@ -38,9 +38,9 @@ class AdminNotificationController extends Controller
         $notification = Auth::user()->notifications()->where('id', $id)->first();
         if ($notification) {
             $notification->delete();
-            return response()->json(['success' => true]);
-        }
-        return response()->json(['success' => false], 404);
+            return response()->json(['success' => true, 'message' => '✅ تم حذف الإشعار بنجاح']);
+    }
+    return response()->json(['success' => false, 'message' => '❌ فشل حذف الإشعار أو أنه غير موجود'], 404);
     }
 
     public function approve(Post $post)

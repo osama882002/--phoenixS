@@ -1,17 +1,22 @@
+// public/js/admin/notifications.js
+
 function deleteNotification(id) {
-    if (!confirm('هل أنت متأكد من حذف هذا الإشعار؟')) return;
+    // if (!confirm('هل أنت متأكد من حذف هذا الإشعار؟')) return;
     fetch('/admin/notifications/' + id, {
-            method: 'DELETE',
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                'Accept': 'application/json'
+        method: 'DELETE',
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            'Accept': 'application/json'
+        }
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById('notification-' + id)?.remove();
             }
+            window.showToast(data.message, data.success);
         })
-        .then(response => response.ok ? response.json() : Promise.reject())
-        .then(() => {
-            document.getElementById('notification-' + id)?.remove();
-            showToast('✅ تم حذف الإشعار');
-        })
+
         .catch(() => showToast('❌ فشل حذف الإشعار', false));
 }
 
