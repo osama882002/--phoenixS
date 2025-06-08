@@ -1,6 +1,6 @@
-// public/js/posts/weather.js
+// js/posts/weather.js
 
-function getLocation() {
+window.getLocation = function () {
     console.log("جارٍ محاولة تحديد الموقع...");
     const weatherContainer = document.getElementById('weather-container');
     if (!navigator.geolocation) {
@@ -55,9 +55,9 @@ function getLocation() {
             maximumAge: 0
         }
     );
-}
+};
 
-function showErrorMessage(message) {
+window.showErrorMessage = function(message) {
     const weatherContainer = document.getElementById('weather-container');
     if (weatherContainer) {
         weatherContainer.innerHTML = `
@@ -71,4 +71,4 @@ function showErrorMessage(message) {
     } else {
         alert(message);
     }
-}
+};

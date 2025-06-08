@@ -18,12 +18,14 @@ class DatabaseSeeder extends Seeder
             RoleSeeder::class,
             PostPermissionsSeeder::class,
             AdminSeeder::class,
+            CategorySeeder::class,
         ]);
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+        // User::factory()->create([
+        //     'name' => 'Test User',
+        //     'email' => 'test@example.com',
+        //     'role' => 'user',
             
-        ]);
+        // ]);
     }
 }

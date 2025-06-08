@@ -12,7 +12,7 @@ class PostPolicy
      */
     public function update(User $user, Post $post): bool
     {
-        return $user->id === $post->user_id || $user->hasRole('admin');
+        return $user->id === $post->user_id || $user->hasAnyRole(['admin', 'super-admin']);;
     }
 
     /**
@@ -20,7 +20,7 @@ class PostPolicy
      */
     public function delete(User $user, Post $post): bool
     {
-        return $user->id === $post->user_id || $user->hasRole('admin');
+        return $user->id === $post->user_id || $user->hasAnyRole(['admin', 'super-admin']);;
     }
 
     /**
@@ -28,7 +28,7 @@ class PostPolicy
      */
     public function review(User $user): bool
     {
-        return $user->hasRole('admin');
+        return $user->hasAnyRole(['admin', 'super-admin']);;
     }
 
     /**
@@ -36,7 +36,7 @@ class PostPolicy
      */
     public function approve(User $user): bool
     {
-        return $user->hasRole('admin');
+        return $user->hasAnyRole(['admin', 'super-admin']);;
     }
 
     /**
@@ -44,13 +44,13 @@ class PostPolicy
      */
     public function reject(User $user): bool
     {
-        return $user->hasRole('admin');
+        return $user->hasAnyRole(['admin', 'super-admin']);
     }
     /**
      * التحقق من صلاحية الوصول العام للمراجعة من خلال authorize('review', Post::class)
      */
     public function viewAny(User $user): bool
     {
-        return $user->hasRole('admin');
+        return $user->hasAnyRole(['admin', 'super-admin']);
     }
 }

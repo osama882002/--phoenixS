@@ -1,6 +1,6 @@
-window.deleteNotification = function (id) {
-    // if (!confirm('هل أنت متأكد من حذف هذا الإشعار؟')) return;
+// js/user/notifications.js
 
+window.deleteNotification = function (id) {
     fetch('/notifications/' + id, {
         method: 'DELETE',
         headers: {
@@ -34,19 +34,3 @@ function removeNotificationElement(id) {
         setTimeout(() => element.remove(), 300);
     }
 }
-
-window.showToast = function (message, isSuccess) {
-    const toast = document.getElementById('toast');
-    if (!toast) return;
-
-    toast.textContent = message;
-    toast.className = `fixed bottom-5 right-5 px-4 py-2 rounded shadow-lg z-50 ${isSuccess ? 'bg-green-600' : 'bg-red-600'} text-white transition-opacity duration-500`;
-
-    toast.classList.remove('hidden', 'opacity-0');
-    toast.classList.add('opacity-100');
-
-    setTimeout(() => {
-        toast.classList.add('opacity-0');
-        setTimeout(() => toast.classList.add('hidden'), 500);
-    }, 2000);
-};

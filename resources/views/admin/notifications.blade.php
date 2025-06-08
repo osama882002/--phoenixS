@@ -1,138 +1,197 @@
-<!-- resources/views/admin/notifications.blade.php -->
+{{-- resources/views/admin/notifications.blade.php --}}
 @extends('layouts.app')
 
 @section('content')
-    <div class="max-w-6xl mx-auto py-10 px-4">
-        <h1 class="text-3xl font-bold text-indigo-700 mb-6">📨 إشعارات المشرف</h1>
+    <div class="flex flex-col md:flex-row min-h-screen">
+        <x-admin.sidebar active="notifications" />
+        <main class="flex-1 p-6 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100">
+            <h1 class="text-3xl font-bold text-indigo-700 dark:text-indigo-300 mb-6">📨 إشعارات المشرف</h1>
 
-        @if ($notifications->count())
-            <div class="flex justify-between items-center mb-4">
-                {{-- زر تعليم كمقروء --}}
-                <form method="POST" action="{{ route('admin.notifications.readAll') }}">
-                    @csrf
-                    <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">
-                        تعليم الكل كمقروء
-                    </button>
-                </form>
+            @if ($notifications->count())
+                <div class="flex justify-between items-center mb-4">
+                    <form method="POST" action="{{ route('admin.notifications.readAll') }}">
+                        @csrf
+                        <button type="submit"
+                            class="bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-700 dark:hover:bg-indigo-800 text-white px-4 py-2 rounded">
+                            ✅ تعليم الكل كمقروء
+                        </button>
+                    </form>
+                    <form method="POST" action="{{ route('admin.notifications.clearRead') }}">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit"
+                            class="bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800 text-white px-4 py-2 rounded">
+                            🗑️ حذف الإشعارات المقروءة
+                        </button>
+                    </form>
+                </div>
+            @endif
 
-                {{-- زر حذف المقروء --}}
-                <form method="POST" action="{{ route('admin.notifications.clearRead') }}">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">
-                        🗑️ حذف الإشعارات المقروءة
-                    </button>
-                </form>
-            </div>
-        @endif
-        @if ($notifications->isEmpty())
-            <div class="bg-gray-100 text-center p-4 rounded text-gray-500">🚫 لا توجد إشعارات لعرضها حالياً.</div>
-        @endif
+            @if ($notifications->isEmpty())
+                <div class="bg-gray-100 dark:bg-gray-700 text-center p-4 rounded text-gray-500 dark:text-gray-400">
+                    🚫 لا توجد إشعارات لعرضها حالياً.
+                </div>
+            @endif
 
+            @php
+                $postNotifications = $notifications->filter(function ($n) {
+                    return isset($n->data['post_id']) && ($n->data['type'] ?? null) !== 'post_reviewed';
+                });
+                $roleChangeNotifications = $notifications->filter(
+                    fn($n) => ($n->data['type'] ?? null) === 'role_changed',
+                );
 
-        @php
-            $postNotifications = $notifications->filter(fn($n) => isset($n->data['post_id']));
-            $otherNotifications = $notifications->filter(fn($n) => !isset($n->data['post_id']));
-        @endphp
+                $otherNotifications = $notifications->filter(function ($n) {
+                    $type = $n->data['type'] ?? null;
+                    return !isset($n->data['post_id']) && $type !== 'role_changed';
+                });
+            @endphp
 
-        <div class="space-y-6">
-            @if ($postNotifications->count())
-                <div class="bg-white p-4 rounded shadow">
-                    <h2 class="text-lg font-semibold text-indigo-600 mb-4">📚 إشعارات المقالات</h2>
-                    @foreach ($postNotifications as $notification)
-                        <div id="notification-{{ $notification->id }}"
-                            class="border-b border-gray-200 pb-3 mb-3 {{ $notification->read_at ? 'opacity-60' : '' }}">
-                            {{-- محتوى الإشعار --}}
-                            <p class="text-gray-800 font-medium">
-                                📨 {{ $notification->data['message'] ?? 'تم إرسال مقال جديد للمراجعة.' }}
-                            </p>
-
-                            @if (isset($notification->data['title']))
-                                <p class="text-sm text-gray-600 mt-1">📌 عنوان المقال:
-                                    <strong>{{ $notification->data['title'] }}</strong>
-                                </p>
+            <div class="space-y-6">
+                @role('super-admin')
+                    {{-- إشعارات الادمن (مراجعة المقالات) --}}
+                    <div class="bg-white dark:bg-gray-800 p-4 rounded shadow dark:shadow-md dark:shadow-gray-700/30">
+                        <h2 class="text-lg font-semibold text-indigo-600 dark:text-indigo-300 mb-4">🧑‍💻 إشعارات الادمن</h2>
+                        @foreach ($notifications as $notification)
+                            @if (($notification->data['type'] ?? null) === 'post_reviewed')
+                                {{-- إشعار مراجعة المقال من الأدمن --}}
+                                <div id="notification-{{ $notification->id }}"
+                                    class="border-b border-gray-200 dark:border-gray-600 pb-3 mb-3 {{ $notification->read_at ? 'opacity-60' : '' }}">
+                                    <p class="text-indigo-700 dark:text-indigo-300 font-semibold">
+                                        {{ $notification->data['title'] ?? 'إشعار' }}
+                                    </p>
+                                    <p class="text-sm text-gray-700 dark:text-gray-300">
+                                        {{ $notification->data['message'] ?? '' }}
+                                    </p>
+                                    @php
+                                        $url =
+                                            $notification->data['url'] ??
+                                            route('posts.show', $notification->data['post_id'] ?? 0);
+                                    @endphp
+                                    <a href="{{ $url }}"
+                                        class="text-sm text-blue-600 dark:text-blue-400 hover:underline">
+                                        🔗 عرض المقال
+                                    </a>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400">
+                                        {{ $notification->created_at->diffForHumans() }}
+                                    </p>
+                                </div>
                             @endif
-                            @if (isset($notification->data['author']))
-                                <p class="text-sm text-gray-600">✍️ بواسطة:
-                                    <strong>{{ $notification->data['author'] }}</strong>
+                        @endforeach
+                    </div>
+                @endrole
+
+                {{-- إشعارات المقالات (إرسال، قيد المراجعة) --}}
+                @if ($postNotifications->count())
+                    <div class="bg-white dark:bg-gray-800 p-4 rounded shadow dark:shadow-md dark:shadow-gray-700/30">
+                        <h2 class="text-lg font-semibold text-indigo-600 dark:text-indigo-300 mb-4">📚 إشعارات المقالات</h2>
+                        @foreach ($postNotifications as $notification)
+                            <div id="notification-{{ $notification->id }}"
+                                class="border-b border-gray-200 dark:border-gray-600 pb-3 mb-3 {{ $notification->read_at ? 'opacity-60' : '' }}">
+                                <p class="text-gray-800 dark:text-gray-200 font-medium">
+                                    📨 {{ $notification->data['message'] ?? 'تم إرسال مقال جديد للمراجعة.' }}
                                 </p>
-                            @endif
-
-                            <p class="text-xs text-gray-400 mt-1">{{ $notification->created_at->diffForHumans() }}</p>
-
-                            {{-- الأزرار --}}
-                            <div class="flex gap-3 mt-2">
-                                @php
-                                    $post = \App\Models\Post::find($notification->data['post_id']);
-                                @endphp
-
-                                @if ($post && $post->status === 'approved')
-                                    <a href="{{ route('posts.show', $post->id) }}"
-                                        class="inline-block mt-2 text-indigo-600 text-sm hover:underline">مراجعة المقال
-                                        ➡️</a>
-                                @else
-                                    <span class="text-sm text-gray-500 mt-2 inline-block">المقال غير متاح</span>
+                                @if (isset($notification->data['title']))
+                                    <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                        📌 عنوان المقال: <strong>{{ $notification->data['title'] }}</strong>
+                                    </p>
                                 @endif
+                                @if (isset($notification->data['author']))
+                                    <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                        ✍️ بواسطة: <strong>{{ $notification->data['author'] }}</strong>
+                                    </p>
+                                @endif
+                                <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                                    {{ $notification->created_at->diffForHumans() }}
+                                </p>
+                                <div class="flex gap-3 mt-2">
+                                    @php $post = \App\Models\Post::find($notification->data['post_id']); @endphp
+                                    @if ($post)
+                                        @if ($post->status === 'approved')
+                                            <a href="{{ route('posts.show', $post->id) }}"
+                                                class="text-indigo-600 dark:text-indigo-400 text-sm hover:underline">عرض
+                                                المقال ➡️</a>
+                                        @elseif ($post->status === 'pending')
+                                            <a href="{{ route('admin.posts.review') }}"
+                                                class="text-amber-600 dark:text-amber-400 text-sm hover:underline">اذهب
+                                                للمراجعة ➡️</a>
+                                        @else
+                                            <span class="text-sm text-gray-500 dark:text-gray-400">المقال غير متاح</span>
+                                        @endif
+                                    @else
+                                        <span class="text-sm text-gray-500 dark:text-gray-400">المقال غير متاح</span>
+                                    @endif
+
+                                    <button onclick="deleteNotification('{{ $notification->id }}')"
+                                        class="text-sm text-red-600 dark:text-red-400 hover:underline">🗑 حذف</button>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                @endif
+
+
+                @if ($roleChangeNotifications->count())
+                    <div class="bg-white dark:bg-gray-800 p-4 rounded shadow dark:shadow-md dark:shadow-gray-700/30">
+                        <h2 class="text-lg font-semibold text-indigo-600 dark:text-indigo-300 mb-4">🔁 إشعارات تغيير الأدوار
+                        </h2>
+
+                        @foreach ($roleChangeNotifications as $notification)
+                            <div id="notification-{{ $notification->id }}"
+                                class="border-b border-gray-200 dark:border-gray-600 pb-3 mb-3 {{ $notification->read_at ? 'opacity-60' : '' }}">
+
+                                <p class="text-gray-800 dark:text-gray-200">
+                                    {{ $notification->data['message'] }}
+                                </p>
+
+                                <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                                    {{ $notification->created_at->diffForHumans() }}
+                                </p>
 
                                 <button onclick="deleteNotification('{{ $notification->id }}')"
-                                    class="text-sm text-red-600 hover:underline">🗑 حذف</button>
+                                    class="text-xs text-red-600 dark:text-red-400 hover:underline mt-2">
+                                    🗑️ حذف
+                                </button>
                             </div>
-                        </div>
-                    @endforeach
+                        @endforeach
+                    </div>
+                @endif
 
-                </div>
-            @endif
+                {{-- إشعارات أخرى --}}
+                @if ($otherNotifications->count())
+                    <div class="bg-white dark:bg-gray-800 p-4 rounded shadow dark:shadow-md dark:shadow-gray-700/30">
+                        <h2 class="text-lg font-semibold text-indigo-600 dark:text-indigo-300 mb-4">🔔 إشعارات أخرى</h2>
+                        @foreach ($otherNotifications as $notification)
+                            @if (isset($notification->data['new_role']))
+                                <div id="notification-{{ $notification->id }}"
+                                    class="border-b border-gray-200 dark:border-gray-600 pb-3 mb-3 {{ $notification->read_at ? 'opacity-60' : '' }}">
+                                    <p class="text-gray-800 dark:text-gray-200">
+                                        {{ $notification->data['message'] }}
+                                    </p>
+                                    <p class="text-xs text-gray-400 dark:text-gray-500">
+                                        {{ $notification->created_at->diffForHumans() }}
+                                    </p>
+                                    <button onclick="deleteNotification('{{ $notification->id }}')"
+                                        class="text-xs text-red-600 dark:text-red-400 hover:underline">🗑️ حذف</button>
+                                </div>
+                            @endif
+                        @endforeach
+                    </div>
+                @endif
+            </div>
 
-            @if ($otherNotifications->count())
-                <div class="bg-white p-4 rounded shadow">
-                    <h2 class="text-lg font-semibold text-indigo-600 mb-4">🔔 إشعارات أخرى</h2>
-                    @foreach ($otherNotifications as $notification)
-                        <div id="notification-{{ $notification->id }}"
-                            class="border-b border-gray-200 pb-3 mb-3 {{ $notification->read_at ? 'opacity-60' : '' }}">
-                            <p class="text-gray-800">{{ $notification->data['message'] ?? 'رسالة إشعار' }}</p>
-                            <p class="text-xs text-gray-500">{{ $notification->created_at->diffForHumans() }}</p>
-
-                            <button onclick="deleteNotification('{{ $notification->id }}')"
-                                class="text-xs text-red-600 hover:underline">🗑️ حذف</button>
-                        </div>
-                    @endforeach
-                </div>
-            @endif
-        </div>
-
-        <div id="toast" class="fixed bottom-5 right-5 bg-green-500 text-white px-4 py-2 rounded shadow hidden z-50">
-        </div>
+            {{-- Toast --}}
+            <div id="toast"
+                class="fixed bottom-5 right-5 bg-green-500 dark:bg-green-700 text-white px-4 py-2 rounded shadow hidden z-50">
+            </div>
+        </main>
     </div>
-
-    {{-- <script>
-        function deleteNotification(id) {
-            if (!confirm('هل أنت متأكد من حذف هذا الإشعار؟')) return;
-            fetch('/admin/notifications/' + id, {
-                    method: 'DELETE',
-                    headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                        'Accept': 'application/json'
-                    }
-                })
-                .then(response => response.ok ? response.json() : Promise.reject())
-                .then(() => {
-                    document.getElementById('notification-' + id)?.remove();
-                    showToast('✅ تم حذف الإشعار');
-                })
-                .catch(() => showToast('❌ فشل حذف الإشعار', false));
-        }
-
-        function showToast(message, success = true) {
-            const toast = document.getElementById('toast');
-            toast.textContent = message;
-            toast.className =
-                `fixed bottom-5 right-5 px-4 py-2 rounded shadow z-50 ${success ? 'bg-green-500' : 'bg-red-500'} text-white`;
-            toast.classList.remove('hidden');
-            setTimeout(() => toast.classList.add('hidden'), 2000);
-        }
-    </script> --}}
-
-<script src="{{ asset('assets/js/admin/notifications.js') }}" ></script>
-
+    @push('styles')
+        <style>
+            .notification-item {
+                transition: opacity 0.3s ease;
+            }
+        </style>
+    @endpush
+    <script src="{{ asset('assets/js/admin/notifications.js') }}"></script>
 @endsection
-

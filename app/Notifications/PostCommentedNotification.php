@@ -5,6 +5,7 @@ namespace App\Notifications;
 use App\Models\Post;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
+use Illuminate\Support\Facades\Auth;
 
 class PostCommentedNotification extends Notification
 {
@@ -20,7 +21,7 @@ class PostCommentedNotification extends Notification
     public function toDatabase($notifiable): array
     {
         return [
-            'message' => 'قام شخص بالتعليق على مقالك: ' . $this->post->title,
+            'message' => 'قام ' . Auth::user()->name . ' بالتعليق على مقالك: ' . $this->post->title,
             'post_id' => $this->post->id,
         ];
     }

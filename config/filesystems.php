@@ -45,6 +45,7 @@ return [
             'visibility' => 'public',
             'throw' => false,
             'report' => false,
+            'disable_asserts' => true, 
         ],
 
         's3' => [

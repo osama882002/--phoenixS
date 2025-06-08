@@ -1,5 +1,4 @@
 <?php
-
 namespace Database\Seeders;
 
 use App\Models\User;
@@ -11,10 +10,11 @@ class AdminSeeder extends Seeder
 {
     public function run(): void
     {
-        // إنشاء الدور إن لم يكن موجودًا
+        // إنشاء الأدوار
         $adminRole = Role::firstOrCreate(['name' => 'admin']);
+        $superAdminRole = Role::firstOrCreate(['name' => 'super-admin']);
 
-        // إنشاء أو تحديث المستخدم الإداري
+        // إنشاء مشرف عادي
         $admin = User::updateOrCreate(
             ['email' => 'admin@example.com'],
             [
@@ -22,8 +22,16 @@ class AdminSeeder extends Seeder
                 'password' => Hash::make('password'),
             ]
         );
-
-        // تأكد من أن المستخدم لديه الدور
         $admin->syncRoles([$adminRole]);
+
+        // إنشاء السوبر أدمن
+        $superAdmin = User::updateOrCreate(
+            ['email' => 'superadmin@example.com'],
+            [
+                'name' => 'Super Admin',
+                'password' => Hash::make('superpassword'), 
+            ]    
+        );
+        $superAdmin->syncRoles([$superAdminRole]);
     }
 }

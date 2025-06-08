@@ -15,13 +15,19 @@ class WeatherController extends Controller
         $weather = null;
         $weatherError = false;
         $posts = [];
-    
+
         try {
-            $posts = Post::where('status', 'approved')->latest()->take(3)->get();
+            $posts = Post::whereHas('category', function ($query) {
+                $query->where('slug', 'weather-tips');
+            })
+                ->where('status', 'approved')
+                ->latest()
+                ->take(3)
+                ->get();
         } catch (\Exception $e) {
             Log::warning('فشل في جلب المقالات:', ['error' => $e->getMessage()]);
         }
-    
+
         if ($request->has(['lat', 'lon'])) {
             try {
                 $lat = $request->input('lat');
@@ -32,7 +38,7 @@ class WeatherController extends Controller
                 $weatherError = true;
             }
         }
-    
+
         // تمرير كل المتغيرات دائمًا
         return view('site.weather-tips')->with([
             'weather' => $weather,
@@ -40,9 +46,9 @@ class WeatherController extends Controller
             'posts' => $posts,
         ]);
     }
-    
-    
-    
+
+
+
 
 
     private function fetchWeatherData($lat, $lon)

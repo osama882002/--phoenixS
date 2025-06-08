@@ -29,6 +29,9 @@ class PostPermissionsSeeder extends Seeder
         $admin = Role::firstOrCreate(['name' => 'admin']);
         $admin->syncPermissions($permissions);
 
+        $superAdmin = Role::firstOrCreate(['name' => 'super-admin']);
+        $superAdmin->syncPermissions(Permission::all()); // ⬅️ يعطيه كل الصلاحيات
+
         // يمكنك لاحقًا ربط صلاحيات معينة بدور "user" لو أردت
     }
 }

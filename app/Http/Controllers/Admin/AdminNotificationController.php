@@ -46,6 +46,8 @@ class AdminNotificationController extends Controller
     public function approve(Post $post)
     {
         $this->authorize('approve', $post);
+        abort_unless(auth::user()->hasRole(['admin', 'super-admin']), 403);
+
         $post->update(['status' => 'approved']);
         $post->user->notify(new PostApprovedNotification($post));
         return redirect()->back()->with('success', 'تمت الموافقة على المقال.');
@@ -54,6 +56,7 @@ class AdminNotificationController extends Controller
     public function reject(Post $post)
     {
         $this->authorize('reject', $post);
+        abort_unless(auth::user()->hasRole(['admin', 'super-admin']), 403);
         $post->user->notify(new PostRejectedNotification($post));
         $post->delete();
         return redirect()->back()->with('success', 'تم رفض المقال وحذفه.');

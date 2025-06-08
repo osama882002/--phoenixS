@@ -53,44 +53,131 @@ class PostController extends Controller
 
     public function store(Request $request)
     {
+
+        //     if ($request->hasFile('media')) {
+        //     $file = $request->file('media');
+        //     dd([
+        //         'extension' => $file->getClientOriginalExtension(),
+        //         'mimeType' => $file->getMimeType(),
+        //     ]);
+        // }
+        // الحصول على بيانات الملف (إن وُجد)
+        $file = $request->file('media');
+
+        // تحديد الرسائل الديناميكية
+        $messages = [];
+
+        if ($request->hasFile('media')) {
+            $mimeType = $file->getMimeType(); // مثل image/gif
+            $extension = $file->getClientOriginalExtension(); // مثل gif
+
+            $messages['media.mimeType'] = "❌ الصيغة غير مدعومة. لقد رفعت ملف بصيغة .$mimeType ، بينما يُسمح بـ JPG, PNG, JPEG أو MP4 فقط.";
+        }
         $request->validate([
             'idea' => 'required|string',
-            'media' => 'nullable|file|mimes:jpeg,png,jpg,mp4',
+            'media' => 'nullable|file|mimetypes:video/mp4,application/octet-stream,image/jpeg,image/png,image/jpg,image/gif,image/webp|max:51200',
             'category_id' => 'required|exists:categories,id',
+        ], [
+
+            'idea.required' => '❌ الرجاء كتابة فكرة المقال.',
+            'category_id.required' => '❌ الرجاء اختيار القسم.',
+            'media.file' => '❌ يجب أن يكون الملف صورة أو فيديو.',
+            // 'media.mimes' => '❌ الصيغة غير مدعومة. يُسمح بـ JPG, PNG, JPEG أو MP4 فقط.',
+            'media.mimeType' => $messages,
+            'media.max' => '❌ الحد الأقصى للحجم هو 50 ميجابايت.',
         ]);
 
-        $mediaPath = $request->hasFile('media')
-            ? $request->file('media')->store('uploads', 'public')
-            : null;
+        $mediaPath = null;
 
-        $status = auth::user()->hasRole('admin') ? 'approved' : 'pending';
+        if ($request->hasFile('media')) {
+            $media = $request->file('media');
+            $originalExtension = strtolower($media->getClientOriginalExtension()); // يستخرج mp4 أو jpeg إلخ
+            $filename = 'user_' . auth::id() . '_' . now()->format('YmdHis') . '.' . $originalExtension;
+
+            $mediaPath = $media->storeAs('media', $filename, 'public'); // يحفظ بالاسم والامتداد الصحيح
+
+            // التحقق من أن الملف تم رفعه بنجاح
+            if (!$mediaPath) {
+                return back()->with('error', 'فشل في رفع الملف. يرجى المحاولة بملف آخر.');
+            }
+        }
+
+
+
+
+        $status = auth::user()->hasAnyRole(['admin', 'super-admin']) ? 'approved' : 'pending';
 
         $post = Post::create([
-            'user_id'     => Auth::id(),
-            'title'       => substr($request->idea, 0, 60),
-            'body'        => $request->idea,
-            'media_path'  => $mediaPath,
+            'user_id' => auth::id(),
+            'body' => $request->idea,
+            'media_path' => $mediaPath,
             'category_id' => $request->category_id,
-            'status'      => $status,
+            'status' => $status,
         ]);
 
-        // إشعار المشرفين فقط إذا لم يكن أدمن
-        if (!auth::user()->hasRole('admin')) {
-            $admins = User::role('admin')->get();
+        if (!auth::user()->hasAnyRole(['admin', 'super-admin'])) {
+            $admins = User::role(['admin', 'super-admin'])->get();
             foreach ($admins as $admin) {
-                $post->load('user'); // تأكد من تحميل علاقة المستخدم
+                $post->load('user');
                 $admin->notify(new NewPostSubmitted($post));
             }
         }
 
+
         // return redirect()->route(
         //     auth::user()->hasRole('admin') ? 'admin.posts.index' : 'posts.my'
         // )->with('success', auth::user()->hasRole('admin') ? 'تم نشر المقال مباشرة.' : 'تم إرسال المقال للمراجعة.');
-    
-        return redirect()->route('posts.my')->with('success', auth::user()->hasRole('admin') ? 'تم نشر المقال مباشرة.' : 'تم إرسال المقال للمراجعة.');
+
+        return redirect()->route('posts.my')->with(
+            'success',
+            auth::user()->hasAnyRole(['admin', 'super-admin'])
+                ? 'تم نشر المقال مباشرة.'
+                : 'تم إرسال المقال للمراجعة.'
+        );
     }
 
+    public function update(Request $request, Post $post)
+    {
+        $this->authorize('update', $post);
 
+        $request->validate([
+            'body' => 'required|string',
+            'media' => 'nullable|file|mimetypes:video/mp4,application/octet-stream,image/jpeg,image/png,image/jpg,image/gif,image/webp|max:51200',
+            'category_id' => 'required|exists:categories,id',
+        ], [
+            'idea.required' => '❌ الرجاء كتابة فكرة المقال.',
+            'category_id.required' => '❌ الرجاء اختيار القسم.',
+            'media.file' => '❌ يجب أن يكون الملف صورة أو فيديو.',
+            'media.mimeType' => '❌ الصيغة غير مدعومة. يُسمح بـ JPG, PNG, JPEG أو MP4 فقط.',
+            'media.max' => '❌ الحد الأقصى للحجم هو 50 ميجابايت.',
+        ]);
+
+        $data = [
+            'body' => $request->body,
+            'category_id' => $request->category_id,
+        ];
+
+        if ($request->hasFile('media')) {
+            // حذف الملف القديم إن وجد
+            if ($post->media_path) {
+                Storage::disk('public')->delete($post->media_path);
+            }
+
+            $media = $request->file('media');
+            $originalExtension = strtolower($media->getClientOriginalExtension()); // يستخرج mp4 أو jpeg إلخ
+            $filename = 'user_' . auth::id() . '_' . now()->format('YmdHis') . '.' . $originalExtension;
+
+            $data['media_path'] = $media->storeAs('uploads', $filename, 'public');
+
+            if (!$data['media_path']) {
+                return back()->with('error', 'فشل في تحديث الملف المرفق.');
+            }
+        }
+
+        $post->update($data);
+
+        return redirect()->route('posts.my')->with('success', 'تم تحديث المقال بنجاح.');
+    }
     public function show(Post $post)
     {
         $user = auth::user();
@@ -131,7 +218,7 @@ class PostController extends Controller
             $query->latest(); // default: latest
         }
 
-        $posts = $query->get();
+        $posts = $query->paginate(6);
         $categories = Category::all();
 
         return view('site.my-articles', compact('posts', 'categories'));
@@ -141,18 +228,21 @@ class PostController extends Controller
     public function search(Request $request)
     {
         $query = $request->input('q');
-
+        // ✅ إذا لم يُدخل المستخدم كلمة، أعده مع رسالة خطأ
+        if (empty($query) || mb_strlen($query) < 3) {
+            return redirect()->back()->with('error', '⚠️ يرجى إدخال كلمة مكونة من 3 أحرف على الأقل.');
+        }
         $posts = Post::where('status', 'approved')
-            ->where(function ($q) use ($query) {
-                $q->where('title', 'like', "%{$query}%")
-                    ->orWhere('body', 'like', "%{$query}%");
-            })
-            ->withCount('likes')
-            ->latest()
-            ->get();
+            ->where('body', 'like', '%' . $query . '%') // بحث جزئي داخل body
+            ->with(['user', 'category']) // تحميل العلاقات
+            ->withCount('likes') // إحضار عدد الإعجابات
+            ->orderByDesc('likes_count') // ترتيب حسب الأكثر إعجابًا
+            ->paginate(5);
 
         return view('site.search-results', compact('posts', 'query'));
     }
+
+
     public function like(Post $post)
     {
         $user = auth::user();
@@ -161,7 +251,7 @@ class PostController extends Controller
         $post->likes()->toggle($user->id);
 
         if (!$likedBefore && $post->user_id !== $user->id) {
-            $post->user->notify(new \App\Notifications\PostLikedNotification($post));
+            $post->user->notify(new PostLikedNotification($post));
         }
 
         return response()->json([
@@ -198,35 +288,11 @@ class PostController extends Controller
     public function edit(Post $post)
     {
         $this->authorize('update', $post); // تحقق من الصلاحية إن وُجدت سياسة
-        return view('site.edit', compact('post'));
+        $categories = Category::all(); // ⬅️ أضف هذا السطر
+        return view('site.edit', compact('post', 'categories')); // ⬅️ أضف categories
     }
 
-    public function update(Request $request, Post $post)
-    {
-        $this->authorize('update', $post); // للتحقق من الصلاحية
 
-        $request->validate([
-            // 'title' => 'required|string|max:255',
-            'body' => 'required|string',
-            'media' => 'nullable|file|mimes:jpeg,png,jpg,mp4'
-        ]);
-
-        $data = [
-            // 'title' => $request->title,
-            'body' => $request->body,
-        ];
-
-        if ($request->hasFile('media')) {
-            if ($post->media_path) {
-                Storage::disk('public')->delete($post->media_path);
-            }
-            $data['media_path'] = $request->file('media')->store('uploads', 'public');
-        }
-
-        $post->update($data);
-
-        return redirect()->route('posts.my')->with('success', 'تم تحديث المقال بنجاح.');
-    }
 
     public function destroy(Post $post)
     {

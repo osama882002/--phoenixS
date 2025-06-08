@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\PostReviewController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\User\UserNotificationsController;
 use App\Http\Controllers\WeatherController;
+use App\Models\Category;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Site\PostController;
 use App\Models\Post;
@@ -15,16 +16,17 @@ use Illuminate\Support\Facades\Http;
 
 // صفحات عامة
 Route::get('/', function (Request $request) {
+    $categories = Category::all();
     $sort = $request->get('sort', 'latest');
 
     $posts = Post::where('status', 'approved')
         ->with('category')
         ->when($sort === 'popular', fn($q) => $q->withCount('likes')->orderByDesc('likes_count'))
         ->when($sort === 'latest', fn($q) => $q->latest())
-        ->take(3) // 👈 هذا السطر يحدد فقط 3 مقالات
+        ->take(3) // 👈 عدّل حسب ما تريد عرضه
         ->get();
 
-    return view('site.home', compact('posts', 'sort'));
+    return view('site.home', compact('posts', 'sort', 'categories'));
 })->name('home');
 
 Route::view('/about', 'site.about')->name('about');
@@ -82,16 +84,19 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
 
 // توجيه لوحة التحكم
 Route::get('/dashboard', function () {
-    return auth::user()->hasRole('admin')
+    return auth::user()->hasAnyRole(['admin', 'super-admin'])
         ? redirect()->route('admin.dashboard')
         : redirect()->route('home');
 })->middleware('auth')->name('dashboard');
+
+
 
 // إشعارات المستخدم
 Route::middleware('auth')->prefix('notifications')->group(function () {
     Route::get('/', [UserNotificationsController::class, 'index'])->name('user.notifications');
     Route::post('/read', [UserNotificationsController::class, 'markAllAsRead'])->name('user.notifications.read');
     Route::delete('/{id}', [UserNotificationsController::class, 'destroy'])->name('user.notifications.destroy');
+    Route::delete('/notifications/clear-all', [UserNotificationsController::class, 'clearAll'])->name('user.notifications.clear');
 });
 
 

@@ -1,4 +1,5 @@
-// public/js/posts/post-interactions.js
+// js/posts/post-interactions.js
+
 // دالة لعرض/إخفاء التعليقات
 function toggleComments(postId) {
     const el = document.getElementById('comments-' + postId);
@@ -7,7 +8,7 @@ function toggleComments(postId) {
     }
 }
 
-// دالة لعرض المزيد من التعليقات
+// دالة لتوسيع التعليقات
 function toggleCommentsExpand(postId) {
     const items = document.querySelectorAll('.comment-item-' + postId);
     const loadMoreBtn = document.getElementById('load-more-btn-' + postId);
@@ -28,7 +29,7 @@ function toggleCommentsExpand(postId) {
     }
 }
 
-// دالة لإخفاء التعليقات الإضافية
+// دالة لطي التعليقات
 function collapseComments(postId) {
     const items = document.querySelectorAll('.comment-item-' + postId);
     const loadMoreBtn = document.getElementById('load-more-btn-' + postId);
@@ -44,7 +45,7 @@ function collapseComments(postId) {
     loadMoreBtn.classList.remove('hidden');
 }
 
-// دالة للإعجاب/إلغاء الإعجاب
+// دالة الإعجاب
 function toggleLike(postId) {
     fetch('/posts/' + postId + '/like', {
         method: 'POST',
@@ -69,8 +70,7 @@ function toggleLike(postId) {
     });
 }
 
-
-// دالة لإضافة تعليق جديد
+// دالة إضافة تعليق
 async function submitComment(event, postId) {
     event.preventDefault();
 
@@ -111,7 +111,7 @@ async function submitComment(event, postId) {
     }
 }
 
-// دالة لحذف التعليق
+// دالة حذف تعليق
 async function deleteComment(event, commentId, postId) {
     const deleteButton = event.target;
     deleteButton.disabled = true;
@@ -158,7 +158,7 @@ async function deleteComment(event, commentId, postId) {
     }
 }
 
-// تحديث عداد التعليقات
+// تحديث العداد
 function updateCommentsCounter(postId, change) {
     const commentsLink = document.querySelector(`#post-${postId} a[onclick*="toggleComments(${postId})"]`);
     if (commentsLink) {
@@ -196,13 +196,3 @@ function checkIfCommentsEmpty(postId) {
         document.getElementById(`comments-${postId}`).classList.add('hidden');
     }
 }
-
-// تأثيرات بصرية
-const style = document.createElement('style');
-style.textContent = `
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(10px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-`;
-document.head.appendChild(style);

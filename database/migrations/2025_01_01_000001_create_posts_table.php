@@ -10,6 +10,8 @@ return new class extends Migration {
             $table->id();
             $table->string('name');
             $table->string('slug')->unique();
+            $table->string('image')->nullable();
+            $table->text('description')->nullable();
             $table->timestamps();
         });
 
@@ -17,7 +19,6 @@ return new class extends Migration {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->foreignId('category_id')->constrained()->onDelete('cascade');
-            $table->string('title');
             $table->text('body');
             $table->string('media_path')->nullable();
             $table->enum('status', ['pending', 'approved'])->default('pending');

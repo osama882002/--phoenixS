@@ -36,4 +36,9 @@ class UserNotificationsController extends Controller
         }
         return response()->json(['success' => false, 'message' => '❌ لم يتم العثور على الإشعار'], 404);
     }
+    public function clearAll()
+    {
+        auth::user()->notifications()->delete();
+        return back()->with('success', '✅ تم حذف جميع الإشعارات.');
+    }
 }
