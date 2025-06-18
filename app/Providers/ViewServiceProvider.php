@@ -22,7 +22,7 @@ class ViewServiceProvider extends ServiceProvider
     public function boot(): void
     {
             // توفير $categories لجميع العروض التي تحتوي على nav_links
-    View::composer('components.nav_links', function ($view) {
+    View::composer('*', function ($view) {
         $view->with('categories', Category::all());
     });
     }

@@ -13,6 +13,7 @@ use App\Models\Post;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
+use App\Http\Controllers\Auth\SocialController;
 
 // صفحات عامة
 Route::get('/', function (Request $request) {
@@ -32,6 +33,8 @@ Route::get('/', function (Request $request) {
 Route::view('/about', 'site.about')->name('about');
 Route::view('/terms', 'site.terms')->name('terms');
 Route::get('/search', [PostController::class, 'search'])->name('posts.search');
+Route::view('/contact', 'contact')->name('contact');
+
 
 // صفحات الأقسام
 Route::get('/{categorySlug}', [PostController::class, 'indexByCategory'])
@@ -101,9 +104,14 @@ Route::middleware('auth')->prefix('notifications')->group(function () {
 
 
 
-
+// الطقس
 Route::get('/weather-tips', [WeatherController::class, 'showWeatherTips'])->name('weather.tips');
 Route::get('/api/weather', [WeatherController::class, 'index'])->name('api.weather');
+
+
+
+Route::get('/auth/{provider}', [SocialController::class, 'redirect']);
+Route::get('/auth/{provider}/callback', [SocialController::class, 'callback']);
 
 
 

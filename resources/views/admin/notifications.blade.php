@@ -48,38 +48,41 @@
             @endphp
 
             <div class="space-y-6">
-                @role('super-admin')
-                    {{-- إشعارات الادمن (مراجعة المقالات) --}}
-                    <div class="bg-white dark:bg-gray-800 p-4 rounded shadow dark:shadow-md dark:shadow-gray-700/30">
-                        <h2 class="text-lg font-semibold text-indigo-600 dark:text-indigo-300 mb-4">🧑‍💻 إشعارات الادمن</h2>
-                        @foreach ($notifications as $notification)
-                            @if (($notification->data['type'] ?? null) === 'post_reviewed')
-                                {{-- إشعار مراجعة المقال من الأدمن --}}
-                                <div id="notification-{{ $notification->id }}"
-                                    class="border-b border-gray-200 dark:border-gray-600 pb-3 mb-3 {{ $notification->read_at ? 'opacity-60' : '' }}">
-                                    <p class="text-indigo-700 dark:text-indigo-300 font-semibold">
-                                        {{ $notification->data['title'] ?? 'إشعار' }}
-                                    </p>
-                                    <p class="text-sm text-gray-700 dark:text-gray-300">
-                                        {{ $notification->data['message'] ?? '' }}
-                                    </p>
-                                    @php
-                                        $url =
-                                            $notification->data['url'] ??
-                                            route('posts.show', $notification->data['post_id'] ?? 0);
-                                    @endphp
-                                    <a href="{{ $url }}"
-                                        class="text-sm text-blue-600 dark:text-blue-400 hover:underline">
-                                        🔗 عرض المقال
-                                    </a>
-                                    <p class="text-xs text-gray-500 dark:text-gray-400">
-                                        {{ $notification->created_at->diffForHumans() }}
-                                    </p>
-                                </div>
-                            @endif
-                        @endforeach
-                    </div>
-                @endrole
+                @if ($notifications->count())
+                    @role('super-admin')
+                        {{-- إشعارات الادمن (مراجعة المقالات) --}}
+                        <div class="bg-white dark:bg-gray-800 p-4 rounded shadow dark:shadow-md dark:shadow-gray-700/30">
+                            <h2 class="text-lg font-semibold text-indigo-600 dark:text-indigo-300 mb-4">🧑‍💻 إشعارات الادمن
+                            </h2>
+                            @foreach ($notifications as $notification)
+                                @if (($notification->data['type'] ?? null) === 'post_reviewed')
+                                    {{-- إشعار مراجعة المقال من الأدمن --}}
+                                    <div id="notification-{{ $notification->id }}"
+                                        class="border-b border-gray-200 dark:border-gray-600 pb-3 mb-3 {{ $notification->read_at ? 'opacity-60' : '' }}">
+                                        <p class="text-indigo-700 dark:text-indigo-300 font-semibold">
+                                            {{ $notification->data['title'] ?? 'إشعار' }}
+                                        </p>
+                                        <p class="text-sm text-gray-700 dark:text-gray-300">
+                                            {{ $notification->data['message'] ?? '' }}
+                                        </p>
+                                        @php
+                                            $url =
+                                                $notification->data['url'] ??
+                                                route('posts.show', $notification->data['post_id'] ?? 0);
+                                        @endphp
+                                        <a href="{{ $url }}"
+                                            class="text-sm text-blue-600 dark:text-blue-400 hover:underline">
+                                            🔗 عرض المقال
+                                        </a>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400">
+                                            {{ $notification->created_at->diffForHumans() }}
+                                        </p>
+                                    </div>
+                                @endif
+                            @endforeach
+                        </div>
+                    @endrole
+                @endif
 
                 {{-- إشعارات المقالات (إرسال، قيد المراجعة) --}}
                 @if ($postNotifications->count())

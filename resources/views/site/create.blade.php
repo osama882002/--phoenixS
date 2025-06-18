@@ -67,7 +67,7 @@
                         تحميل صورة أو فيديو (اختياري)
                     </label>
                     <input type="file" name="media" accept="image/*,video/*"
-                        class="mt-1 block w-full text-xs sm:text-sm text-gray-500 dark:text-gray-400 p-2 border rounded"
+                        class="mt-2 block w-50 text-xs sm:text-sm text-gray-500 dark:text-gray-400 p-2 rounded"
                         id="mediaInput">
                     <div id="mediaPreview" class="mt-4"></div>
                     @error('media')

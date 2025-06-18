@@ -5,19 +5,24 @@
     {{-- الشاشات الصغيرة: أفقي --}}
     <div class="flex md:hidden overflow-x-auto border-b dark:border-gray-700">
         <ul class="flex w-full text-sm text-gray-700 dark:text-gray-300 whitespace-nowrap">
-            <li class="flex-1 text-center py-3 px-2 {{ $active == 'dashboard' ? 'text-indigo-600 font-bold border-b-2 border-indigo-600 dark:border-indigo-400' : 'hover:text-indigo-600' }}">
+            <li
+                class="flex-1 text-center py-3 px-2 {{ $active == 'dashboard' ? 'text-indigo-600 font-bold border-b-2 border-indigo-600 dark:border-indigo-400' : 'hover:text-indigo-600' }}">
                 <a href="{{ route('admin.dashboard') }}">🏠 الرئيسية</a>
             </li>
-            <li class="flex-1 text-center py-3 px-2 {{ $active == 'review' ? 'text-indigo-600 font-bold border-b-2 border-indigo-600 dark:border-indigo-400' : 'hover:text-indigo-600' }}">
+            <li
+                class="flex-1 text-center py-3 px-2 {{ $active == 'review' ? 'text-indigo-600 font-bold border-b-2 border-indigo-600 dark:border-indigo-400' : 'hover:text-indigo-600' }}">
                 <a href="{{ route('admin.posts.review') }}">📝 مراجعة المقالات</a>
             </li>
-            <li class="flex-1 text-center py-3 px-2 {{ $active == 'users' ? 'text-indigo-600 font-bold border-b-2 border-indigo-600 dark:border-indigo-400' : 'hover:text-indigo-600' }}">
+            <li
+                class="flex-1 text-center py-3 px-2 {{ $active == 'users' ? 'text-indigo-600 font-bold border-b-2 border-indigo-600 dark:border-indigo-400' : 'hover:text-indigo-600' }}">
                 <a href="{{ route('admin.users.index') }}">👥 المستخدمين</a>
             </li>
-            <li class="flex-1 text-center py-3 px-2 {{ $active == 'posts' ? 'text-indigo-600 font-bold border-b-2 border-indigo-600 dark:border-indigo-400' : 'hover:text-indigo-600' }}">
+            <li
+                class="flex-1 text-center py-3 px-2 {{ $active == 'posts' ? 'text-indigo-600 font-bold border-b-2 border-indigo-600 dark:border-indigo-400' : 'hover:text-indigo-600' }}">
                 <a href="{{ route('admin.posts.index') }}">📚 جميع المقالات</a>
             </li>
-            <li class="flex-1 text-center py-3 px-2 {{ $active == 'notifications' ? 'text-indigo-600 font-bold border-b-2 border-indigo-600 dark:border-indigo-400' : 'hover:text-indigo-600' }}">
+            <li
+                class="flex-1 text-center py-3 px-2 {{ $active == 'notifications' ? 'text-indigo-600 font-bold border-b-2 border-indigo-600 dark:border-indigo-400' : 'hover:text-indigo-600' }}">
                 <a href="{{ route('admin.notifications') }}">🔔 الإشعارات</a>
             </li>
         </ul>
