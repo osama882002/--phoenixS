@@ -132,7 +132,7 @@
             </button>
             {{-- لوحة التحكم --}}
             @auth
-                @if(auth()->user()->hasRole('admin, super-admin'))
+                @if(auth()->user()->hasAnyRole(['admin', 'super-admin']))
                 <a href="{{ route('admin.dashboard') }}"
                     class="hover:text-indigo-600 dark:hover:text-indigo-400 flex items-center gap-1" title="لوحة التحكم">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
@@ -147,7 +147,7 @@
 
             {{-- إشعارات --}}
             @auth
-                <a href="{{ auth()->user()->hasRole('admin') ? route('admin.notifications') : route('user.notifications') }}"
+                <a href="{{ auth()->user()->hasAnyRole(['admin', 'super-admin']) ? route('admin.notifications') : route('user.notifications') }}"
                     class="relative hover:text-indigo-600 dark:hover:text-indigo-400" title="الإشعارات">
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24"
                         stroke="currentColor">
