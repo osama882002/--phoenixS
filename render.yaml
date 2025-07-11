@@ -5,7 +5,7 @@ services:
     plan: free
     region: frankfurt
     dockerfilePath: ./Dockerfile
-    buildCommand: ""
+    buildCommand: ""  # ✅ جيد أن تتركها فارغة
     envVars:
       - key: APP_ENV
         value: production

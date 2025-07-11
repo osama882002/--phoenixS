@@ -1,13 +1,15 @@
-# ✅ استخدم PHP مع Apache
+# ✅ استخدام PHP 8.2 مع Apache
 FROM php:8.2-apache
 
-# ✅ إعداد بيئة العمل
+# ✅ تثبيت Node.js (نسخة مستقرة)
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
+    apt-get update && apt-get install -y nodejs
+
+# ✅ باقي الإعدادات كالسابق...
 WORKDIR /var/www/html
 
-# ✅ تثبيت Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# ✅ تثبيت الإضافات المطلوبة لـ Laravel
 RUN apt-get update && apt-get install -y \
     libonig-dev \
     libzip-dev \
@@ -17,27 +19,24 @@ RUN apt-get update && apt-get install -y \
     curl \
     && docker-php-ext-install pdo pdo_mysql mbstring zip
 
-# ✅ تفعيل mod_rewrite في Apache (مهم لـ Laravel routing)
 RUN a2enmod rewrite
 
-# ✅ نسخ ملفات المشروع إلى الحاوية
 COPY . .
 
-# ✅ إعطاء صلاحيات للمجلدات المطلوبة
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
-# ✅ تثبيت الحزم عبر Composer
-RUN composer install --no-dev --optimize-autoloader
+# ✅ تثبيت حزم Laravel و Vite
+RUN composer install --no-dev --optimize-autoloader \
+    && npm install \
+    && npm run build
 
-# ✅ تحديد مجلد public كنقطة بداية
+RUN cp .env.example .env && php artisan key:generate
+
 ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
 
-# ✅ تعديل إعدادات Apache ليستخدم public كجذر
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf && \
     sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
 
-# ✅ كشف المنفذ 80
 EXPOSE 80
 
-# ✅ أمر التشغيل الأساسي
 CMD ["apache2-foreground"]
