@@ -1,15 +1,24 @@
-# ✅ استخدام PHP 8.2 مع Apache
+# ✅ المرحلة الأولى: Node.js لبناء Vite
+FROM node:18 as vite-builder
+
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm install
+
+COPY . .
+RUN npm run build
+
+# ✅ المرحلة الثانية: PHP + Apache
 FROM php:8.2-apache
 
-# ✅ تثبيت Node.js (نسخة مستقرة)
-RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
-    apt-get update && apt-get install -y nodejs
-
-# ✅ باقي الإعدادات كالسابق...
+# إعدادات Laravel
 WORKDIR /var/www/html
 
+# تثبيت Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
+# تثبيت الإضافات
 RUN apt-get update && apt-get install -y \
     libonig-dev \
     libzip-dev \
@@ -17,26 +26,28 @@ RUN apt-get update && apt-get install -y \
     zip \
     git \
     curl \
-    && docker-php-ext-install pdo pdo_mysql mbstring zip
+    && docker-php-ext-install pdo pdo_mysql mbstring zip \
+    && a2enmod rewrite
 
-RUN a2enmod rewrite
-
+# نسخ ملفات المشروع
 COPY . .
 
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+# ✅ نسخ ملفات Vite المبنية من المرحلة الأولى
+COPY --from=vite-builder /app/public/build ./public/build
 
-# ✅ تثبيت حزم Laravel و Vite
-RUN composer install --no-dev --optimize-autoloader \
-    && npm install \
-    && npm run build
+# صلاحيات Laravel
+RUN chown -R www-data:www-data storage bootstrap/cache
 
+# تثبيت Composer
+RUN composer install --no-dev --optimize-autoloader
+
+# توليد APP_KEY (لو مش موجود)
 RUN cp .env.example .env && php artisan key:generate
 
+# إعداد Apache
 ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
-
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf && \
     sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
 
 EXPOSE 80
-
 CMD ["apache2-foreground"]
