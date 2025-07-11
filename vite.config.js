@@ -9,4 +9,11 @@ export default defineConfig({
             refresh: true,
         }),
     ],
+    build: {
+        outDir: 'public/build', // ✅ هذا يحدد مكان الملفات المجمعة
+        manifest: true,         // ✅ هذا يضمن توليد manifest.json
+        rollupOptions: {
+            input: ['resources/css/app.css', 'resources/js/app.js'],
+        },
+    },
 });
