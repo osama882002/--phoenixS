@@ -1,19 +1,43 @@
-FROM php:8.2-apache
+# ✅ استخدم PHP مع Apache
+FROM php:8.1-apache
 
-# تثبيت الامتدادات المطلوبة
-RUN apt-get update && apt-get install -y \
-    libzip-dev unzip zip git curl libpng-dev libonig-dev libxml2-dev \
-    && docker-php-ext-install pdo_mysql mbstring zip exif pcntl
+# ✅ إعداد بيئة العمل
+WORKDIR /var/www/html
 
-# تثبيت Composer
+# ✅ تثبيت Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# نسخ ملفات Laravel للمجلد الأساسي
-COPY . /var/www/html
+# ✅ تثبيت الإضافات المطلوبة لـ Laravel
+RUN apt-get update && apt-get install -y \
+    libonig-dev \
+    libzip-dev \
+    unzip \
+    zip \
+    git \
+    curl \
+    && docker-php-ext-install pdo pdo_mysql mbstring zip
 
-# إعداد Apache للـ Laravel
-RUN chown -R www-data:www-data /var/www/html \
-    && a2enmod rewrite
+# ✅ تفعيل mod_rewrite في Apache (مهم لـ Laravel routing)
+RUN a2enmod rewrite
 
-# إعداد وثائق Laravel للعمل في public
-WORKDIR /var/www/html
+# ✅ نسخ ملفات المشروع إلى الحاوية
+COPY . .
+
+# ✅ إعطاء صلاحيات للمجلدات المطلوبة
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+
+# ✅ تثبيت الحزم عبر Composer
+RUN composer install --no-dev --optimize-autoloader
+
+# ✅ تحديد مجلد public كنقطة بداية
+ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
+
+# ✅ تعديل إعدادات Apache ليستخدم public كجذر
+RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf && \
+    sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
+
+# ✅ كشف المنفذ 80
+EXPOSE 80
+
+# ✅ أمر التشغيل الأساسي
+CMD ["apache2-foreground"]
