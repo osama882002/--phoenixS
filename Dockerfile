@@ -30,7 +30,7 @@ RUN chown -R www-data:www-data storage bootstrap/cache && \
 # ✅ تثبيت حزم Laravel + Vite
 RUN composer install --no-dev --optimize-autoloader && \
     npm install && \
-    npm run build1
+    npm run build
     RUN npm install && npm run build && ls -la public/build
 
 
