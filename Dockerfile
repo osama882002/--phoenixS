@@ -1,5 +1,5 @@
 # ✅ استخدم PHP مع Apache
-FROM php:8.1-apache
+FROM php:8.2-apache
 
 # ✅ إعداد بيئة العمل
 WORKDIR /var/www/html
