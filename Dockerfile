@@ -1,7 +1,7 @@
 # ✅ استخدم PHP 8.2 مع Apache
 FROM php:8.2-apache
 
-# ✅ تثبيت Node.js (مطلوب لـ Vite)
+# ✅ تثبيت Node.js وضروريات Laravel
 RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
     apt-get update && apt-get install -y \
     nodejs \
@@ -23,29 +23,27 @@ WORKDIR /var/www/html
 # ✅ نسخ جميع ملفات المشروع
 COPY . .
 
-# ✅ إعطاء صلاحيات للمجلدات المطلوبة (storage + cache)
+# ✅ صلاحيات مجلدات التخزين
 RUN chown -R www-data:www-data storage bootstrap/cache && \
     chmod -R 775 storage bootstrap/cache
 
-# ✅ تثبيت حزم Laravel + Vite
+# ✅ تثبيت Laravel و Vite (للإنتاج)
 RUN composer install --no-dev --optimize-autoloader && \
     npm install && \
-    npm run dev
-    # RUN npm install && npm run build && ls -la public/build
+    npm run build
 
+# ✅ إعداد .env وتوليد مفتاح
+RUN cp .env.example .env && \
+    php artisan config:clear && \
+    php artisan key:generate
 
-# ✅ إعداد .env وتوليد مفتاح التطبيق
-RUN cp .env.example .env && php artisan key:generate
-
-# ✅ تعيين مجلد public كجذر الموقع في Apache
+# ✅ ضبط مجلد public في Apache
 ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
-
-# ✅ تحديث إعدادات Apache ليستخدم public/
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf && \
     sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
 
-# ✅ فتح المنفذ 80
+# ✅ فتح المنفذ
 EXPOSE 80
 
-# ✅ بدء تشغيل Apache
+# ✅ بدء Apache
 CMD ["apache2-foreground"]
