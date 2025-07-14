@@ -30,8 +30,8 @@ RUN chown -R www-data:www-data storage bootstrap/cache && \
 # ✅ تثبيت حزم Laravel + Vite
 RUN composer install --no-dev --optimize-autoloader && \
     npm install && \
-    npm run build
-    RUN npm install && npm run build && ls -la public/build
+    npm run dev
+    # RUN npm install && npm run build && ls -la public/build
 
 
 # ✅ إعداد .env وتوليد مفتاح التطبيق
