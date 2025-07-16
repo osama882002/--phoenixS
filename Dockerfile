@@ -8,7 +8,9 @@ COPY package.json package-lock.json vite.config.js tailwind.config.js postcss.co
 COPY resources ./resources
 COPY public ./public
 
-# RUN npm install && npm run build
+# تثبيت الحزم وبناء المشروع ثم نقل manifest.json
+RUN npm install && npm run build \
+    && mv public/build/.vite/manifest.json public/build/manifest.json
 
 # --------------------------
 

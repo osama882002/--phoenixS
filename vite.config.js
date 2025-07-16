@@ -13,13 +13,7 @@ export default defineConfig({
         manifest: true,
         outDir: 'public/build',
         emptyOutDir: true,
-        rollupOptions: {
-            output: {
-                // لحذف .vite/ ووضع الملفات مباشرة
-                entryFileNames: 'assets/[name]-[hash].js',
-                chunkFileNames: 'assets/[name]-[hash].js',
-                assetFileNames: 'assets/[name]-[hash][extname]',
-            },
-        },
+        manifestFileName: 'manifest.json', // يضعه مباشرة في build/
+
     },
 });
