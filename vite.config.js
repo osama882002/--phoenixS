@@ -10,10 +10,16 @@ export default defineConfig({
         }),
     ],
     build: {
-        outDir: 'public/build', // ✅ هذا يحدد مكان الملفات المجمعة
-        manifest: true,         // ✅ هذا يضمن توليد manifest.json
+        manifest: true,
+        outDir: 'public/build',
+        emptyOutDir: true,
         rollupOptions: {
-            input: ['resources/css/app.css', 'resources/js/app.js'],
+            output: {
+                // لحذف .vite/ ووضع الملفات مباشرة
+                entryFileNames: 'assets/[name]-[hash].js',
+                chunkFileNames: 'assets/[name]-[hash].js',
+                assetFileNames: 'assets/[name]-[hash][extname]',
+            },
         },
     },
 });

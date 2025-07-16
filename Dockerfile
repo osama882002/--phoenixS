@@ -8,7 +8,7 @@ COPY package.json package-lock.json vite.config.js tailwind.config.js postcss.co
 COPY resources ./resources
 COPY public ./public
 
-RUN npm install && npm run build
+# RUN npm install && npm run build
 
 # --------------------------
 
